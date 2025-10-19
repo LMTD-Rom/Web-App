@@ -1,0 +1,1587 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* Custom scrollbar: transparent track, styled thumb for light & dark modes */
+        :root{
+            --scroll-thumb: rgba(79,70,229,0.45); /* primary (indigo) translucent for light */
+            --scroll-thumb-hover: rgba(79,70,229,0.6);
+            --scroll-track: transparent;
+        }
+
+        /* Dark mode override (html element has class="dark") */
+        html.dark {
+            --scroll-thumb: rgba(99,102,241,0.85);
+            --scroll-thumb-hover: rgba(99,102,241,0.95);
+        }
+
+        /* WebKit (Chrome, Edge, Safari) */
+        *::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        *::-webkit-scrollbar-track {
+            background: var(--scroll-track);
+        }
+
+        *::-webkit-scrollbar-thumb {
+            background-color: var(--scroll-thumb);
+            border-radius: 9999px;
+            border: 3px solid transparent; /* creates padding so thumb doesn't touch track */
+            background-clip: padding-box;
+            transition: background-color 160ms ease, transform 160ms ease;
+        }
+
+        *::-webkit-scrollbar-thumb:hover {
+            background-color: var(--scroll-thumb-hover);
+            transform: scale(1.05);
+        }
+
+        /* Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+            transition: color 160ms ease;
+        }
+
+        /* Make sure containers with overflow don't show a white track */
+        #material-content, .container, .prose, #content-container {
+            scrollbar-color: var(--scroll-thumb) var(--scroll-track);
+        }
+
+        /* Skip-link (accessible keyboard jump to main content) */
+        .skip-link {
+            position: absolute;
+            left: 1rem;
+            top: 0.75rem;
+            background: #111827; /* slate-900 */
+            color: #fff;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            z-index: 60;
+            transform: translateY(-120%);
+            transition: transform 160ms ease;
+        }
+
+        .skip-link:focus {
+            transform: translateY(0%);
+            outline: none;
+        }
+        .nav-link-active {
+            background-color: #ffffff !important;
+            color: #4f46e5 !important;
+            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+        }
+        html.dark .nav-link-active {
+            background-color: #334155 !important; /* slate-700 */
+            color: #e2e8f0 !important; /* slate-200 */
+        }
+    </style>
+    <script>
+        // Konfigurasi warna custom untuk Tailwind CSS
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { DEFAULT: '#4f46e5', light: '#6366f1', dark: '#4338ca' },
+                        secondary: { DEFAULT: '#64748b', light: '#94a3b8', dark: '#475569' },
+                        background: { light: '#f8fafc', dark: '#0f172a' },
+                        surface: { light: '#ffffff', dark: '#1e293b' },
+                        text: { light: '#0f172a', dark: '#e2e8f0' },
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark transition-colors duration-300">
+    <a href="#content-container" class="skip-link">Skip to content</a>
+
+    <!-- Container Utama -->
+    <div id="app">
+
+        <!-- Halaman Login -->
+        <section id="login-view" class="min-h-screen flex items-center justify-center fade-in p-4">
+            <div class="w-full max-w-sm p-8 space-y-6 bg-surface-light dark:bg-surface-dark rounded-2xl shadow-xl text-center">
+                <div class="flex justify-center">
+                   <svg class="w-20 h-20 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4M6 8l-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+                </div>
+                <h1 class="text-3xl font-extrabold text-text-light dark:text-text-dark">Selamat Datang!</h1>
+                <p class="text-secondary-dark dark:text-secondary-light">Masuk untuk memulai petualangan coding Python Anda di PythonPath.</p>
+                <button id="login-button" class="w-full flex items-center justify-center gap-3 px-4 py-3 font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-light ring-offset-background-light dark:ring-offset-background-dark shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40">
+                    <svg class="w-5 h-5" viewBox="0 0 48 48"><defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs><clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath><path clip-path="url(#b)" fill="#FBBC05" d="M0 37V11l17 13z"/><path clip-path="url(#b)" fill="#EA4335" d="M0 11l17 13 7-6.1L48 14V0H0z"/><path clip-path="url(#b)" fill="#34A853" d="M0 37l30-23 7.9 1L48 0v48H0z"/><path clip-path="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z"/></svg>
+                    Masuk dengan Google
+                </button>
+            </div>
+        </section>
+
+        <!-- Konten Aplikasi Utama -->
+        <main id="main-view" class="hidden min-h-screen">
+            <!-- Header -->
+            <header class="sticky top-0 z-40 w-full bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
+                <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+                    <div class="flex-shrink-0">
+                        <a href="#" class="flex items-center gap-2 font-bold text-xl text-primary nav-link" data-view="dashboard-view">
+                            <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4M6 8l-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+                            <span>PythonPath</span>
+                        </a>
+                    </div>
+                    <div class="flex-1 flex items-center justify-center">
+                        <nav class="hidden md:flex items-center gap-2 bg-slate-200/80 dark:bg-slate-800/60 p-1 rounded-full">
+                            <a href="#" class="nav-link px-4 py-1.5 rounded-full text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-text-light dark:hover:text-text-dark transition-colors" data-view="dashboard-view">Pilih Level</a>
+                            <a href="#" class="nav-link px-4 py-1.5 rounded-full text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-text-light dark:hover:text-text-dark transition-colors" data-view="profile-view">Profil</a>
+                            <a href="#" class="nav-link px-4 py-1.5 rounded-full text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-text-light dark:hover:text-text-dark transition-colors" data-view="about-view">Tentang Kami</a>
+                        </nav>
+                    </div>
+                    <div class="flex-shrink-0 flex items-center gap-4">
+                        <div class="flex items-center gap-2 px-3 py-1.5 bg-yellow-400/20 text-yellow-600 dark:text-yellow-400 rounded-full font-semibold">
+                            <i data-lucide="gem" class="w-4 h-4"></i>
+                            <span id="token-count">15</span>
+                        </div>
+                        <button id="theme-toggle" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                            <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
+                            <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Konten Halaman Dinamis -->
+            <div id="content-container" class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <!-- Dashboard/Level Selection View -->
+                <section id="dashboard-view" class="content-view fade-in">
+                    <div class="text-center mb-12">
+                        <div class="inline-block bg-surface-light dark:bg-surface-dark p-4 sm:p-6 rounded-full shadow-lg">
+                           <svg class="w-20 h-20 sm:w-24 sm:h-24 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-graduation-cap"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                        </div>
+                    </div>
+                    <h1 class="text-4xl font-extrabold text-center mb-4">Pilih Level Belajar Anda</h1>
+                    <p class="text-slate-500 dark:text-slate-400 mb-12 text-center max-w-2xl mx-auto">Setiap level dirancang untuk membangun pemahaman Anda secara bertahap, dari dasar hingga menjadi seorang developer handal.</p>
+                    <div id="level-selection-container" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <!-- Level cards will be populated by JS -->
+                    </div>
+                </section>
+
+                <!-- Roadmap View -->
+                <section id="roadmap-view" class="content-view hidden fade-in max-w-3xl mx-auto">
+                    <div class="flex items-center mb-8">
+                         <button id="back-to-dashboard-from-roadmap" class="flex items-center gap-2 text-sm font-medium text-secondary-dark dark:text-secondary-light hover:text-primary dark:hover:text-primary-light transition-colors">
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali ke Pilihan Level
+                        </button>
+                    </div>
+                    <h1 id="roadmap-title" class="text-4xl font-extrabold text-center mb-4">Roadmap Pembelajaran</h1>
+                    <p id="roadmap-description" class="text-slate-500 dark:text-slate-400 mb-10 text-center"></p>
+                    <div id="roadmap-container" class="space-y-4">
+                        <!-- Roadmap modules will be populated by JS -->
+                    </div>
+                </section>
+
+                <!-- Material View -->
+                <section id="material-view" class="content-view hidden fade-in max-w-4xl mx-auto">
+                     <button id="back-to-roadmap-from-material" class="flex items-center gap-2 text-sm font-medium text-secondary-dark dark:text-secondary-light hover:text-primary dark:hover:text-primary-light transition-colors mb-6">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali ke Roadmap
+                    </button>
+                    <div class="bg-surface-light dark:bg-surface-dark p-8 rounded-2xl shadow-lg">
+                        <h1 id="material-title" class="text-3xl font-bold mb-6 text-primary border-b border-slate-200 dark:border-slate-700 pb-4">Materi Pembelajaran</h1>
+                        <div id="material-content" class="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 mb-8 max-h-96 overflow-y-auto pr-4">
+                            <!-- Learning material will be populated by JS -->
+                        </div>
+                        <button id="start-quiz-button" class="w-full flex items-center justify-center gap-2 px-6 py-3 font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all duration-200 shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40">
+                            Mulai Kuis Sekarang <i data-lucide="rocket" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Profile View -->
+                <section id="profile-view" class="content-view hidden fade-in max-w-5xl mx-auto">
+                     <h1 class="text-4xl font-extrabold text-center mb-10">Profil & Progress</h1>
+                     <div class="bg-surface-light dark:bg-surface-dark p-8 rounded-2xl shadow-lg flex flex-col md:flex-row items-center gap-8 mb-8">
+                        <div class="relative">
+                            <img id="profile-pic" src="https://placehold.co/128x128/e2e8f0/64748b?text=Foto" alt="Foto Profil" class="w-32 h-32 rounded-full object-cover ring-4 ring-primary/50">
+                            <label for="photo-upload" class="absolute bottom-0 right-0 p-2 bg-primary rounded-full cursor-pointer hover:bg-primary-dark transition-colors">
+                                <i data-lucide="camera" class="w-5 h-5 text-white"></i>
+                                <input type="file" id="photo-upload" class="hidden" accept="image/*">
+                            </label>
+                        </div>
+                        <div class="flex-1 w-full text-center md:text-left">
+                            <div class="flex items-center justify-center md:justify-start gap-3">
+                                <h2 id="profile-name-display" class="text-3xl font-bold">Nama Kamu</h2>
+                                <input id="profile-name-input" class="hidden w-full max-w-xs text-3xl font-bold bg-slate-100 dark:bg-slate-700 rounded-md px-2 py-1 outline-none focus:ring-2 focus:ring-primary" type="text">
+                                <button id="edit-name-btn" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex-shrink-0">
+                                    <i data-lucide="pencil" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-center md:justify-start gap-3 mt-2">
+                                 <p id="profile-quote-display" class="text-secondary-dark dark:text-secondary-light italic">"Semangat belajar jangan sampai padam!"</p>
+                                 <input id="profile-quote-input" class="hidden w-full max-w-xs bg-slate-100 dark:bg-slate-700 rounded-md px-2 py-1 outline-none focus:ring-2 focus:ring-primary" type="text">
+                                 <button id="edit-quote-btn" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex-shrink-0">
+                                    <i data-lucide="pencil" class="w-5 h-5"></i>
+                                </button>
+                            </div>
+                        </div>
+                     </div>
+                     <div id="profile-progress-container" class="space-y-12">
+                        <!-- Progress will be rendered by JS here -->
+                     </div>
+                </section>
+
+                <!-- About Us View -->
+                <section id="about-view" class="content-view hidden fade-in max-w-3xl mx-auto">
+                    <div class="bg-surface-light dark:bg-surface-dark p-8 rounded-2xl shadow-lg text-center">
+                        <h1 class="text-4xl font-extrabold mb-6">Tentang PythonPath</h1>
+                        <p class="text-secondary-dark dark:text-secondary-light leading-relaxed">
+                            PythonPath diciptakan dengan tujuan untuk menyediakan platform pembelajaran Python yang berkualitas, gratis, dan mudah diakses bagi seluruh mahasiswa. Kami percaya bahwa setiap orang berhak mendapatkan kesempatan untuk belajar coding dan mempersiapkan diri menghadapi tantangan di era digital. Misi kami adalah membuat coding menjadi menyenangkan, interaktif, dan tidak menakutkan.
+                        </p>
+                        
+                        <hr class="my-8 border-slate-200 dark:border-slate-700">
+
+                        <div>
+                            <p class="text-sm text-secondary-dark dark:text-secondary-light mb-2">Dibuat dengan ❤️ oleh:</p>
+                            <h3 class="text-2xl font-bold text-primary">KHASBI DAROJATI</h3>
+                            <div class="flex justify-center gap-6 mt-4">
+                                <a href="https://www.instagram.com/khasbi_djt" target="_blank" class="text-secondary-dark dark:text-secondary-light hover:text-primary transition-colors">
+                                    <i class="fa-brands fa-instagram fa-2x"></i>
+                                </a>
+                                <a href="https://www.tiktok.com/@lmtd_fx" target="_blank" class="text-secondary-dark dark:text-secondary-light hover:text-primary transition-colors">
+                                    <i class="fa-brands fa-tiktok fa-2x"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Learning View -->
+                <section id="learning-view" class="content-view hidden fade-in max-w-4xl mx-auto">
+                    <button id="back-to-roadmap" class="flex items-center gap-2 text-sm font-medium text-secondary-dark dark:text-secondary-light hover:text-primary dark:hover:text-primary-light transition-colors mb-6">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali ke Roadmap
+                    </button>
+                    <div class="bg-surface-light dark:bg-surface-dark p-6 sm:p-8 rounded-2xl shadow-lg">
+                        <div class="flex justify-between items-center mb-4">
+                             <h2 id="learning-title" class="text-lg font-semibold">Soal #<span id="question-number">1</span></h2>
+                             <p id="question-counter" class="text-sm text-secondary-dark dark:text-secondary-light">1 / 35</p>
+                        </div>
+                        <p id="question-text" class="mb-6 text-base leading-relaxed">Soal akan dimuat di sini...</p>
+                        <div id="clue-container" class="hidden mb-4 p-4 bg-yellow-100 dark:bg-yellow-900/50 border-l-4 border-yellow-400 text-yellow-800 dark:text-yellow-300 rounded-r-lg">
+                            <p class="font-bold">Clue:</p>
+                            <p id="clue-text" class="text-sm">Clue akan muncul di sini.</p>
+                        </div>
+                        <div id="feedback-container" class="hidden mb-4 p-4 rounded-lg">
+                            <div id="feedback-text" class="font-medium"></div>
+                        </div>
+                        <div id="answer-area" class="mb-6">
+                            <div id="fill-in-container" class="hidden bg-slate-100 dark:bg-slate-900 rounded-lg p-4">
+                               <textarea id="code-answer" rows="3" class="w-full bg-transparent text-text-light dark:text-text-dark font-mono text-sm outline-none resize-none" placeholder="Tulis jawabanmu di sini..."></textarea>
+                            </div>
+                            <div id="multiple-choice-container" class="hidden">
+                                <ul id="mc-options-list" class="space-y-3"></ul>
+                            </div>
+                        </div>
+                        <div class="mt-6 flex flex-col sm:flex-row gap-4">
+                            <button id="submit-answer" class="w-full sm:w-auto flex-1 px-6 py-3 font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all duration-200">Kirim Jawaban</button>
+                            <button id="get-clue" class="w-full sm:w-auto px-6 py-3 flex items-center justify-center gap-2 font-semibold text-primary border border-primary rounded-lg hover:bg-primary/10 transition-all duration-200">
+                                <i data-lucide="lightbulb" class="w-4 h-4"></i> Buka Clue (1 <i data-lucide="gem" class="w-4 h-4 inline-block"></i>)
+                            </button>
+                            <button id="next-question" class="hidden w-full sm:w-auto flex-1 px-6 py-3 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all duration-200">
+                                Lanjut <i data-lucide="arrow-right" class="w-4 h-4 inline-block ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </section>
+                
+                <!-- Selesai Level View -->
+                <section id="completion-view" class="content-view hidden fade-in max-w-2xl mx-auto text-center">
+                    <div class="bg-surface-light dark:bg-surface-dark p-8 rounded-2xl shadow-lg">
+                        <i id="completion-icon" data-lucide="party-popper" class="w-20 h-20 text-yellow-500 mx-auto mb-4"></i>
+                        <h1 id="completion-title" class="text-3xl font-bold mb-2">Selamat!</h1>
+                        <p id="completion-message" class="text-secondary-dark dark:text-secondary-light mb-6">Anda telah menyelesaikan semua soal di modul ini. Hebat!</p>
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button id="back-to-roadmap-from-completion" class="px-6 py-3 font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all duration-200">Kembali ke Roadmap</button>
+                            <button id="remedial-button" class="hidden px-6 py-3 font-semibold text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-all duration-200">Ulangi Soal yang Salah</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- Music Player -->
+            <div id="music-player" class="fixed bottom-4 right-4 z-50 bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-lg w-80">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-bold text-sm">Pemutar Musik</h3>
+                     <button id="toggle-music-player" class="p-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700">
+                        <i data-lucide="chevrons-down-up" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div id="music-player-body">
+                    <div class="aspect-video mb-3">
+                         <iframe id="music-iframe" class="w-full h-full rounded-lg" src="https://www.youtube.com/embed/jfKfPfyJRdk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div class="relative">
+                        <input type="text" id="music-link" placeholder="Tempel link Youtube/Spotify..." class="w-full text-sm px-3 py-2 pr-10 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-100 dark:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-primary">
+                        <button id="change-music" class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-secondary-dark dark:text-secondary-light hover:text-primary">
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <p id="music-feedback" class="text-xs text-center mt-2 hidden"></p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const TOTAL_QUESTIONS_PER_MODULE = 35;
+        const learningData = {
+            pemula: {
+                title: 'Pemula',
+                description: 'Mulai dari dasar-dasar Python, cocok untuk yang belum pernah coding sama sekali.',
+                icon: 'feather',
+                color: 'green',
+                modules: [
+                    { id: 'p_dasar', title: '1. Dasar & Sintaks', description: 'Variabel, tipe data, input/output, komentar.', icon: 'terminal', color: 'green' },
+                    { id: 'p_operator', title: '2. Operator', description: 'Operator aritmatika, perbandingan, dan logika.', icon: 'calculator', color: 'sky' },
+                    { id: 'p_string', title: '3. Manipulasi String', description: 'Bekerja dengan teks, slicing, dan metode string.', icon: 'type', color: 'amber' },
+                ]
+            },
+            menengah: {
+                title: 'Menengah',
+                description: 'Perdalam konsep lanjutan seperti OOP, struktur data, dan modul standar.',
+                icon: 'code-2',
+                color: 'blue',
+                modules: [
+                    { id: 'm_kondisional', title: '1. Logika & Kondisional', description: 'Mengontrol alur dengan `if`, `elif`, dan `else`.', icon: 'git-merge', color: 'blue' },
+                    { id: 'm_struktur_data_1', title: '2. List & Tuple', description: 'Mengelola kumpulan data sekuensial.', icon: 'list', color: 'rose' },
+                    { id: 'm_perulangan', title: '3. Perulangan (Loops)', description: 'Menguasai `for` dan `while` untuk tugas berulang.', icon: 'repeat', color: 'indigo' },
+                    { id: 'm_struktur_data_2', title: '4. Dictionary & Set', description: 'Data key-value dan koleksi unik.', icon: 'braces', color: 'purple' },
+                ]
+            },
+            developer: {
+                title: 'Developer',
+                description: 'Siap menjadi developer? Pelajari framework, database, dan best practice.',
+                icon: 'server',
+                color: 'red',
+                modules: [
+                    { id: 'd_fungsi', title: '1. Fungsi Lanjutan', description: 'Parameter, return values, scope, dan lambda.', icon: 'function-square', color: 'red' },
+                    { id: 'd_oop', title: '2. OOP (Object-Oriented)', description: 'Class, object, inheritance, polymorphism.', icon: 'box', color: 'orange' },
+                    { id: 'd_file', title: '3. Manajemen File', description: 'Membaca dan menulis data ke file.', icon: 'file-text', color: 'yellow' },
+                    { id: 'd_error', title: '4. Error Handling', description: 'Mengelola kesalahan dengan `try-except`.', icon: 'shield-alert', color: 'teal' },
+                ]
+            }
+        };
+        
+        const state = {
+            loggedIn: false,
+            currentView: 'login-view',
+            user: {
+                name: 'Nama Kamu',
+                quote: 'Semangat belajar jangan sampai padam!',
+                photo: 'https://placehold.co/128x128/e2e8f0/64748b?text=Foto',
+                tokens: 15,
+                progress: {}, correctCount: {}, incorrectQuestions: {},
+            },
+            learning: { level: null, module: null, selectedAnswerIndex: null, mode: 'normal' },
+            theme: localStorage.getItem('theme') || 'dark',
+        };
+
+        const learningMaterials = {
+            p_dasar: `
+                <h2 class="text-2xl font-bold mb-4">1. Variabel</h2>
+                <p class="mb-4">Dalam pemrograman, variabel adalah seperti sebuah kotak penyimpanan yang diberi nama. Anda bisa menyimpan berbagai jenis informasi di dalamnya, seperti teks atau angka, dan mengambilnya kembali nanti dengan memanggil namanya.</p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code># Membuat variabel nama dan umur
+nama = "Budi"
+umur = 20
+
+# Menampilkan nilai dari variabel
+print(nama)
+print(umur)</code></pre>
+                
+                <h2 class="text-2xl font-bold mb-4 mt-6">2. Tipe Data Dasar</h2>
+                <p class="mb-4">Python secara otomatis mengenali jenis data yang Anda simpan. Beberapa tipe data dasar yang paling umum adalah:</p>
+                <ul class="list-disc list-inside space-y-2 mb-4">
+                    <li><b class="font-semibold">String (<span class="prose-code">str</span>):</b> Untuk menyimpan teks. Harus diapit oleh tanda kutip tunggal (<code class="prose-code">''</code>) atau ganda (<code class="prose-code">""</code>). Contoh: <code class="prose-code">"Halo Dunia"</code>.</li>
+                    <li><b class="font-semibold">Integer (<span class="prose-code">int</span>):</b> Untuk menyimpan bilangan bulat tanpa desimal. Contoh: <code class="prose-code">100</code>, <code class="prose-code">-5</code>.</li>
+                    <li><b class="font-semibold">Float (<span class="prose-code">float</span>):</b> Untuk menyimpan bilangan desimal. Contoh: <code class="prose-code">3.14</code>, <code class="prose-code">-0.5</code>.</li>
+                    <li><b class="font-semibold">Boolean (<span class="prose-code">bool</span>):</b> Hanya untuk menyimpan dua nilai: <code class="prose-code">True</code> atau <code class="prose-code">False</code>. Berguna untuk kondisi.</li>
+                </ul>
+
+                <h2 class="text-2xl font-bold mb-4 mt-6">3. Fungsi Input dan Output</h2>
+                <p class="mb-4">Program Anda bisa berinteraksi dengan pengguna. Fungsi <code class="prose-code">print()</code> digunakan untuk menampilkan output, dan <code class="prose-code">input()</code> untuk menerima masukan dari pengguna.</p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code># Menampilkan sapaan
+print("Selamat datang!")
+
+# Meminta nama pengguna dan menyimpannya
+nama_pengguna = input("Siapa nama Anda? ")
+
+# Menampilkan kembali nama yang diinput
+print("Halo, " + nama_pengguna)</code></pre>
+                <p class="mb-4"><b>Penting:</b> Fungsi <code class="prose-code">input()</code> selalu menghasilkan tipe data string. Jika Anda butuh angka, Anda harus mengubahnya secara manual menggunakan <code class="prose-code">int()</code> atau <code class="prose-code">float()</code>.</p>
+
+                <h2 class="text-2xl font-bold mb-4 mt-6">4. Komentar</h2>
+                <p class="mb-4">Komentar adalah baris kode yang diabaikan oleh Python. Gunanya adalah untuk memberikan catatan atau penjelasan pada kode Anda agar mudah dimengerti oleh diri sendiri atau orang lain. Komentar satu baris diawali dengan tanda pagar (<code class="prose-code">#</code>).</p>
+                 <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm"><code># Ini adalah sebuah komentar, baris ini tidak akan dijalankan
+x = 10 # Komentar juga bisa ditaruh di akhir baris</code></pre>
+            `,
+            p_operator: `
+                <h2 class="text-2xl font-bold mb-4">1. Operator Aritmatika ➕➖✖➗</h2>
+                <p class="mb-4">Operator aritmatika adalah yang paling umum, digunakan untuk melakukan operasi matematika dasar.</p>
+                <p class="mb-2 font-semibold">Contoh Kode:</p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code># Siapkan dua variabel angka
+a = 10
+b = 3
+
+# Tampilkan hasil dari setiap operasi
+print("Penjumlahan:", a + b)     # Output: 13
+print("Pengurangan:", a - b)     # Output: 7
+print("Perkalian:  ", a * b)     # Output: 30
+print("Pembagian:  ", a / b)     # Output: 3.333...
+print("Sisa Bagi:  ", a % b)     # Output: 1 (Karena 10 dibagi 3 adalah 3 dengan sisa 1)
+print("Pangkat:    ", a ** b)    # Output: 1000 (10 pangkat 3)</code></pre>
+                <ul class="list-disc list-inside mb-6">
+                    <li><strong>+ (Penjumlahan):</strong> Menambahkan dua nilai.</li>
+                    <li><strong>- (Pengurangan):</strong> Mengurangkan nilai.</li>
+                    <li><strong>* (Perkalian):</strong> Mengalikan nilai.</li>
+                    <li><strong>/ (Pembagian):</strong> Menghasilkan nilai desimal (float).</li>
+                    <li><strong>% (Modulo/Sisa Bagi):</strong> Memberikan sisa dari pembagian.</li>
+                    <li><strong>** (Pangkat):</strong> Memangkatkan sebuah nilai.</li>
+                </ul>
+
+                <h2 class="text-2xl font-bold mb-4 mt-6">2. Operator Perbandingan ⚖</h2>
+                <p class="mb-4">Operator perbandingan digunakan untuk membandingkan dua nilai. Hasilnya selalu berupa nilai Boolean (<code>True</code> atau <code>False</code>), dan merupakan fondasi dari pernyataan <code>if</code>.</p>
+                <p class="mb-2 font-semibold">Contoh Kode:</p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code># Siapkan dua variabel untuk dibandingkan
+x = 5
+y = 8
+
+print("Apakah x sama dengan y?", x == y)     # Output: False
+print("Apakah x tidak sama dengan y?", x != y) # Output: True
+print("Apakah x lebih besar dari y?", x > y)   # Output: False
+print("Apakah x lebih kecil dari y?", x < y)   # Output: True
+print("Apakah x lebih kecil atau sama dengan 5?", x <= 5) # Output: True</code></pre>
+                <ul class="list-disc list-inside mb-6">
+                    <li><strong>== (Sama dengan):</strong> Apakah kedua nilai identik?</li>
+                    <li><strong>!= (Tidak sama dengan):</strong> Apakah kedua nilai berbeda?</li>
+                    <li><strong>&gt; (Lebih besar dari)</strong></li>
+                    <li><strong>&lt; (Lebih kecil dari)</strong></li>
+                    <li><strong>&gt;= (Lebih besar atau sama dengan)</strong></li>
+                    <li><strong>&lt;= (Lebih kecil atau sama dengan)</strong></li>
+                </ul>
+
+                <h2 class="text-2xl font-bold mb-4 mt-6">3. Operator Logika </h2>
+                <p class="mb-4">Operator logika digunakan untuk menggabungkan beberapa kondisi perbandingan menjadi satu kesimpulan <code>True</code> atau <code>False</code> yang lebih kompleks.</p>
+                <p class="mb-2 font-semibold">Contoh Kode:</p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code># Variabel untuk studi kasus
+nilai_ujian = 85
+nilai_absensi = 90
+
+# 1. Operator 'and' (dan)
+# Keduanya harus True agar hasilnya True
+lulus = nilai_ujian >= 75 and nilai_absensi >= 80
+print("Status Kelulusan:", lulus) # Output: True
+
+# 2. Operator 'or' (atau)
+# Cukup salah satu True agar hasilnya True
+dapat_diskon = nilai_ujian > 90 or nilai_absensi > 90
+print("Dapat Diskon:", dapat_diskon) # Output: False
+
+# 3. Operator 'not' (bukan/tidak)
+# Membalikkan nilai Boolean
+terlambat = False
+tidak_terlambat = not terlambat
+print("Status Tidak Terlambat:", tidak_terlambat) # Output: True</code></pre>
+                <ul class="list-disc list-inside mb-6">
+                    <li><strong>and:</strong> Menghasilkan True hanya jika semua kondisi bernilai True.</li>
+                    <li><strong>or:</strong> Menghasilkan True jika minimal salah satu kondisi bernilai True.</li>
+                    <li><strong>not:</strong> Membalikkan nilai Boolean (True menjadi False, dan sebaliknya).</li>
+                </ul>
+            `,
+            p_string: `
+                <h2 class="text-2xl font-bold mb-4">1. Bekerja dengan Teks (Operasi Dasar) 📝</h2>
+                <p class="mb-4">String pada dasarnya adalah urutan karakter. Anda bisa melakukan beberapa operasi dasar yang sangat berguna.</p>
+                <ul class="list-disc list-inside mb-4">
+                    <li><em>Penggabungan (Concatenation):</em> Menggabungkan dua atau lebih string menjadi satu menggunakan operator <code>+</code>.</li>
+                    <li><em>Perulangan (Repetition):</em> Mengulang sebuah string beberapa kali menggunakan operator <code>*</code>.</li>
+                </ul>
+                <p class="mb-2 font-semibold">Contoh Kode:</p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code># Penggabungan
+kata_depan = "Selamat"
+kata_belakang = "Pagi"
+sapaan = kata_depan + " " + kata_belakang
+print(sapaan) # Output: Selamat Pagi
+
+# Perulangan
+simbol = "-="
+dekorasi = simbol * 10
+print(dekorasi) # Output: -=-=-=-=-=-=-=-=-=
+</code></pre>
+
+                <h2 class="text-2xl font-bold mb-4 mt-6">2. Slicing (Memotong String) ✂</h2>
+                <p class="mb-4">Slicing memungkinkan Anda mengambil sebagian (substring) dari sebuah string berdasarkan posisinya (indeks). Indeks di Python dimulai dari <code>0</code> untuk karakter pertama.</p>
+                <p class="mb-2 font-semibold">Konsep Dasar Indeks:</p>
+                <div class="mb-4">
+                    <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-3 text-sm"><code>+---+---+---+---+---+
+| P | y | t | h | o |
+"+---+---+---+---+---+
+  0   1   2   3   4   (Indeks dari depan)
+ -5  -4  -3  -2  -1  (Indeks dari belakang)</code></pre>
+                </div>
+                <p class="mb-2 font-semibold">Format Slicing: <code>variabel[mulai:akhir:langkah]</code></p>
+                <ul class="list-disc list-inside mb-4">
+                    <li><strong>mulai</strong>: Indeks awal (termasuk). Jika dikosongkan, dimulai dari 0.</li>
+                    <li><strong>akhir</strong>: Indeks akhir (tidak termasuk). Jika dikosongkan, sampai ke akhir string.</li>
+                    <li><strong>langkah</strong>: Jarak antar indeks (opsional).</li>
+                </ul>
+                <p class="mb-2 font-semibold">Contoh Kode:</p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code>teks = "Belajar Python"
+
+# Mengambil satu karakter
+print(teks[0])   # Output: B
+print(teks[-1])  # Output: n (karakter terakhir)
+
+# Mengambil sebagian string (range)
+print(teks[0:7]) # Output: Belajar (dari indeks 0 sampai sebelum 7)
+print(teks[8:])  # Output: Python (dari indeks 8 sampai akhir)
+print(teks[:7])  # Output: Belajar (dari awal sampai sebelum 7)</code></pre>
+
+                <h2 class="text-2xl font-bold mb-4 mt-6">3. Metode String (Fungsi Bawaan) 🛠</h2>
+                <p class="mb-4">Python menyediakan banyak metode yang melekat pada string untuk melakukan tugas-tugas umum. Metode dipanggil menggunakan titik (<code>.</code>) setelah nama variabel string.</p>
+                <p class="mb-2 font-semibold">Contoh Metode Populer:</p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code>kalimat = "   selamat datang di Dunia Koding!   "
+
+# Mengubah menjadi huruf besar
+print(kalimat.upper())
+
+# Mengubah menjadi huruf kecil
+print(kalimat.lower())
+
+# Menghapus spasi di awal dan akhir
+print(kalimat.strip())
+
+# Mengganti bagian dari string
+print(kalimat.replace("Dunia Koding", "Indonesia"))
+
+# Memecah string menjadi daftar (list) berdasarkan spasi
+print(kalimat.strip().split(" "))
+</code></pre>
+                <ul class="list-disc list-inside mb-6">
+                    <li><strong>.upper() & .lower()</strong>: Mengubah kapitalisasi huruf.</li>
+                    <li><strong>.strip()</strong>: Membersihkan spasi atau karakter tertentu di awal dan akhir string.</li>
+                    <li><strong>.replace(lama, baru)</strong>: Mengganti semua kemunculan substring lama dengan yang baru.</li>
+                    <li><strong>.split(pemisah)</strong>: Memecah string menjadi beberapa bagian berdasarkan karakter pemisah dan menyimpannya dalam sebuah list.</li>
+                </ul>
+            `,
+            m_kondisional: `
+                <h2 class="text-2xl font-bold mb-4">1. Pernyataan if (Jika)</h2>
+                <p class="mb-4">Pernyataan <code>if</code> adalah pintu gerbang utama. Ia akan menjalankan blok kode di bawahnya hanya jika sebuah kondisi bernilai <strong>Benar (True)</strong>. Anggap saja ini seperti pertanyaan "ya atau tidak". Jika jawabannya "ya", maka lakukan sesuatu.</p>
+                <p class="mb-2"><strong>Konsep:</strong></p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code>if (kondisi ini benar):
+    lakukan aksi ini</code></pre>
+                <p class="mb-2"><strong>Contoh Kode:</strong> Program akan memeriksa apakah seseorang sudah cukup umur untuk mendapatkan SIM.</p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code># Variabel untuk menyimpan umur
+usia = 20
+
+# if akan memeriksa apakah nilai 'usia' lebih besar atau sama dengan 17
+if usia >= 17:
+    print("Anda sudah cukup umur untuk membuat SIM.")</code></pre>
+                <p class="mb-4">Karena <code>20 &gt;= 17</code> adalah <code>True</code>, maka pesan akan ditampilkan. Jika <code>usia</code> adalah 15, tidak ada yang akan terjadi.</p>
+
+                <h2 class="text-2xl font-bold mb-4 mt-6">2. Pernyataan else (Jika Tidak)</h2>
+                <p class="mb-4"><code>else</code> adalah rencana cadangan. Ia memberikan tindakan alternatif yang akan dijalankan hanya jika kondisi <code>if</code> ternyata <code>False</code>. <code>else</code> tidak memiliki kondisinya sendiri; ia hanya menangani semua kasus yang tidak dipenuhi oleh <code>if</code>.</p>
+                <p class="mb-2"><strong>Konsep:</strong></p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code>if (kondisi ini benar):
+    lakukan aksi ini
+else:
+    lakukan aksi alternatif ini</code></pre>
+                <p class="mb-2"><strong>Contoh Kode:</strong> Melanjutkan contoh sebelumnya, kita tambahkan pesan untuk mereka yang belum cukup umur.</p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code>usia = 15
+
+if usia >= 17:
+    print("Anda sudah cukup umur untuk membuat SIM.")
+else:
+    print("Maaf, Anda belum cukup umur.")</code></pre>
+                <p class="mb-4">Karena <code>15 &gt;= 17</code> adalah <code>False</code>, maka blok kode di dalam <code>else</code> yang akan dijalankan.</p>
+
+                <h2 class="text-2xl font-bold mb-4 mt-6">3. Pernyataan elif (Jika Kondisi Lain)</h2>
+                <p class="mb-4">Bagaimana jika ada lebih dari dua kemungkinan? Di sinilah <code>elif</code> (singkatan dari <em>else if</em>) berperan. <code>elif</code> memungkinkan kita untuk menambahkan pemeriksaan kondisi lain secara berurutan jika kondisi <code>if</code> pertama gagal.</p>
+                <p class="mb-2"><strong>Konsep:</strong> Program akan memeriksa kondisi satu per satu dari atas ke bawah dan akan berhenti setelah menemukan kondisi pertama yang <code>True</code>.</p>
+                <p class="mb-2"><strong>Contoh Kode:</strong> Mari kita buat sistem penilaian berdasarkan skor.</p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code>nilai = 85
+
+if nilai >= 90:
+    print("Predikat: A (Luar Biasa)")
+elif nilai >= 80:
+    print("Predikat: B (Baik)")
+elif nilai >= 70:
+    print("Predikat: C (Cukup)")
+else:
+    print("Predikat: D (Perlu Belajar Lagi)")</code></pre>
+                <p class="mb-4">Alur Logikanya: Program memeriksa <code>nilai &gt;= 90</code>? Tidak — lanjut ke <code>elif</code>. Apakah <code>nilai &gt;= 80</code>? Ya — cetak "Predikat: B (Baik)" dan berhenti; <code>elif</code> dan <code>else</code> di bawahnya tidak akan diperiksa lagi.</p>
+            `,
+            d_fungsi: `
+                <h2 class="text-2xl font-bold mb-4">Fungsi Lanjutan</h2>
+                <p class="mb-4">Di sini kita membahas teknik dan pola yang sering dipakai pada fungsi Python yang lebih kompleks: parameter lanjutan, nilai kembalian, scope variabel, dan fungsi lambda (fungsi singkat).</p>
+
+                <h3 class="text-xl font-semibold mb-2 mt-4">1. Parameter Lanjutan</h3>
+                <p class="mb-2">Python mendukung beberapa cara untuk menerima argumen pada fungsi:</p>
+                <ul class="list-disc list-inside mb-4">
+                    <li><strong>Default parameters</strong>: memberikan nilai default jika argumen tidak disertakan.</li>
+                    <li><strong>*args</strong>: menangkap argumen posisi tambahan sebagai tuple.</li>
+                    <li><strong>**kwargs</strong>: menangkap argumen kata kunci tambahan sebagai dictionary.</li>
+                </ul>
+                <p class="mb-2"><strong>Contoh:</strong></p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code>def greet(nama, salam='Halo'):
+    print(f"{salam}, {nama}!")
+
+def jumlahkan(*angka):
+    return sum(angka)
+
+def buat_user(**info):
+    return info
+
+# Penggunaan
+greet('Andi')
+greet('Sari', salam='Selamat pagi')
+print(jumlahkan(1, 2, 3))
+print(buat_user(nama='Budi', umur=25))</code></pre>
+
+                <h3 class="text-xl font-semibold mb-2 mt-4">2. Return Values (Mengembalikan Nilai)</h3>
+                <p class="mb-2">Fungsi dapat mengembalikan satu atau beberapa nilai. Untuk mengembalikan beberapa nilai, kita cukup memisahkannya dengan koma — Python akan mengemasnya menjadi tuple.</p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code>def bagi_dan_sisa(a, b):
+    return a // b, a % b
+
+hasil_bagi, sisa = bagi_dan_sisa(10, 3)
+print(hasil_bagi)  # 3
+print(sisa)        # 1</code></pre>
+
+                <h3 class="text-xl font-semibold mb-2 mt-4">3. Scope Variabel</h3>
+                <p class="mb-2">Scope menentukan di mana variabel dapat diakses. Variabel lokal ada di dalam fungsi. Untuk mengubah variabel di scope luar dari dalam fungsi, gunakan <code>nonlocal</code> (untuk scope penampung di atasnya) atau <code>global</code> (untuk variabel global).</p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code>x = 10  # global
+
+def contoh():
+    x = 5  # lokal, berbeda dari global x
+    print(x)
+
+def ubah_global():
+    global x
+    x = 20
+
+contoh()
+print(x)   # tetap 10
+ubah_global()
+print(x)   # sekarang 20</code></pre>
+
+                <h3 class="text-xl font-semibold mb-2 mt-4">4. Fungsi Lambda (Fungsi Singkat)</h3>
+                <p class="mb-2">Lambda adalah fungsi kecil tanpa nama yang biasa digunakan untuk operasi singkat, misalnya sebagai argumen pada fungsi lain seperti <code>sorted()</code> atau <code>map()</code>.</p>
+                <pre class="bg-slate-100 dark:bg-slate-800 rounded-md p-4 text-sm mb-4"><code# contoh lambda:
+square = lambda x: x * x
+print(square(5))  # 25
+
+data = [(1, 'b'), (3, 'a'), (2, 'c')]
+# Mengurutkan berdasarkan elemen pertama
+data_sorted = sorted(data, key=lambda item: item[0])
+print(data_sorted)</code></pre>
+
+                <p class="mb-4">Itu adalah ringkasan fitur fungsi lanjutan yang paling sering dipakai. Cobalah bereksperimen — buat fungsi dengan <code>*args</code>/<code>**kwargs</code>, kembalikan beberapa nilai, dan lihat bagaimana scope bekerja saat Anda memodifikasi variabel di luar fungsi.</p>
+            `
+        };
+        
+        const questionBank = {
+            p_dasar: [
+                { id: 1, type: 'multiple-choice', text: "Fungsi apa yang digunakan untuk menampilkan output ke konsol di Python?", clue: "Fungsi ini sangat umum digunakan untuk debugging.", options: ['display()', 'print()', 'echo()', 'show()'], answerIndex: 1, explanation: "Fungsi `print()` adalah fungsi bawaan untuk menampilkan output." },
+                { id: 2, type: 'fill-in', text: "Lengkapi kode untuk membuat variabel `nama` dengan nilai teks 'Budi':\n`____ = 'Budi'`", clue: "Nama variabel ditulis sebelum tanda sama dengan (=).", answer: "nama", explanation: "Variabel dibuat dengan memberikan nama diikuti operator (=) dan nilainya." },
+                { id: 3, type: 'multiple-choice', text: "Manakah tipe data untuk bilangan bulat?", clue: "Singkatan dari 'bilangan bulat' dalam bahasa Inggris.", options: ['float', 'string', 'boolean', 'integer'], answerIndex: 3, explanation: "`integer` (atau `int`) adalah tipe data untuk bilangan bulat." },
+                { id: 4, type: 'fill-in', text: "Tuliskan simbol untuk komentar satu baris di Python.", clue: "Dikenal sebagai 'pagar' atau 'hash'.", answer: "#", explanation: "Simbol `#` digunakan untuk menandai komentar satu baris." },
+                { id: 5, type: 'multiple-choice', text: "Fungsi apa untuk menerima input teks dari pengguna?", clue: "Mirip kata 'masukan'.", options: ['get()', 'read()', 'input()', 'ask()'], answerIndex: 2, explanation: "Fungsi `input()` digunakan untuk membaca input teks dari pengguna sebagai string." },
+                { id: 6, type: 'multiple-choice', text: "Tipe data dari `10.5` adalah...", clue: "Angka ini punya titik desimal.", options: ['int', 'str', 'float', 'bool'], answerIndex: 2, explanation: "Angka dengan titik desimal adalah tipe data `float`." },
+                { id: 7, type: 'fill-in', text: "Lengkapi kode untuk mengubah angka 100 menjadi teks (string):\n`angka_str = ___(100)`", clue: "Singkatan dari tipe data string.", answer: "str", explanation: "Fungsi `str()` digunakan untuk mengonversi tipe data lain menjadi string." },
+                { id: 8, type: 'multiple-choice', text: "Manakah penulisan variabel yang valid di Python?", clue: "Tidak boleh diawali angka atau mengandung spasi.", options: ['nama lengkap', '2nama', 'nama_lengkap', 'nama-lengkap'], answerIndex: 2, explanation: "Nama variabel di Python tidak boleh diawali angka, mengandung spasi, atau karakter strip (-). Underscore (_) diperbolehkan." },
+                { id: 9, type: 'fill-in', text: "Tipe data `True` dan `False` disebut...", clue: "Dinamai dari George Boole.", answer: "boolean", explanation: "`boolean` hanya memiliki dua nilai: `True` atau `False`." },
+                { id: 10, type: 'multiple-choice', text: "Cara memeriksa tipe data variabel `x` adalah...", clue: "Gunakan fungsi `type()`.", options: ['typeof(x)', 'datatype(x)', 'type(x)', 'x.type()'], answerIndex: 2, explanation: "Fungsi bawaan `type()` digunakan untuk mendapatkan tipe data." },
+                { id: 11, type: 'fill-in', text: "Lengkapi kode untuk menampilkan 'Halo Dunia': `print('___ _____')`", clue: "String diapit oleh tanda kutip.", answer: "Halo Dunia", explanation: "Teks atau string harus diapit oleh tanda kutip (' ' atau \" \")." },
+                { id: 12, type: 'multiple-choice', text: "Kode manakah yang akan menghasilkan `TypeError`?", clue: "Python tidak bisa menambahkan `string` dengan `int` secara langsung.", options: ['"Usia: " + "20"', '20 + 20', '"Usia: " + str(20)', '"Usia: " + 20'], answerIndex: 3, explanation: "Anda tidak bisa menggabungkan string dengan integer secara langsung menggunakan operator `+`." },
+                { id: 13, type: 'fill-in', text: "Lengkapi kode untuk mengubah input dari pengguna menjadi angka bulat:\n`umur = ___(input('Masukkan umur: '))`", clue: "Gunakan fungsi konversi ke bilangan bulat.", answer: "int", explanation: "Fungsi `input()` selalu menghasilkan string, jadi perlu dikonversi ke `int` untuk operasi matematika." },
+                { id: 14, type: 'multiple-choice', text: "Apa output dari `print(type('5'))`?", clue: "Fungsi `type()` akan mengembalikan tipe data dari objek di dalamnya.", options: ["<class 'int'>", "<class 'str'>", "<class 'float'>", "Error"], answerIndex: 1, explanation: "Teks apapun yang diapit tanda kutip, bahkan jika itu angka, dianggap sebagai string (`str`)." },
+                { id: 15, type: 'fill-in', text: "Deklarasikan variabel `harga` dengan nilai `15000.5`.", clue: "Gunakan format `nama_variabel = nilai`.", answer: "harga = 15000.5", explanation: "Variabel dideklarasikan dengan `nama = nilai`." },
+                { id: 16, type: 'multiple-choice', text: "Manakah yang BUKAN tipe data dasar di Python?", clue: "Pikirkan tentang struktur data sekuensial bawaan Python.", options: ['int', 'str', 'array', 'bool'], answerIndex: 2, explanation: "Python memiliki `list` sebagai gantinya. `array` ada di modul terpisah dan bukan tipe data dasar." },
+                { id: 17, type: 'fill-in', text: "Tulis kode untuk mencetak variabel `poin` ke layar.", clue: "Gunakan fungsi yang sama untuk mencetak teks.", answer: "print(poin)", explanation: "Untuk mencetak nilai variabel, cukup masukkan nama variabel di dalam `print()`." },
+                { id: 18, type: 'multiple-choice', text: "Apa itu variabel dalam pemrograman?", clue: "Variabel adalah nama simbolis untuk sebuah nilai.", options: ['Sebuah nilai konstan', 'Sebuah fungsi', 'Sebuah nama untuk menyimpan data', 'Sebuah komentar'], answerIndex: 2, explanation: "Variabel bertindak sebagai 'wadah' atau 'label' untuk menyimpan nilai data." },
+                { id: 19, type: 'fill-in', text: "Tipe data untuk teks adalah `___`.", clue: "Ini adalah tipe data paling umum untuk representasi teks.", answer: "string", explanation: "String (`str`) adalah urutan karakter yang digunakan untuk menyimpan teks." },
+                { id: 20, type: 'multiple-choice', text: "Manakah cara yang benar untuk membuat variabel `_my_var`?", clue: "Aturan penamaan variabel di Python cukup fleksibel.", options: ['Benar', 'Salah, tidak boleh diawali underscore', 'Salah, harus diawali huruf'], answerIndex: 0, explanation: "Nama variabel di Python boleh diawali dengan underscore (_)." },
+                { id: 21, type: 'fill-in', text: "Lengkapi kode untuk mengubah `9.8` menjadi integer: `nilai_bulat = int(___)`", clue: "Konversi tipe data dari `float` ke `int` akan menghilangkan bagian desimal.", answer: "9.8", explanation: "Fungsi `int()` akan memotong bagian desimal, sehingga hasilnya adalah 9." },
+                { id: 22, type: 'multiple-choice', text: "Output dari `print('Halo', 'Siswa')` adalah...", clue: "Secara default, `print()` memisahkan item dengan spasi.", options: ["HaloSiswa", "Halo Siswa", "('Halo', 'Siswa')", "Error"], answerIndex: 1, explanation: "`print()` secara default akan menambahkan spasi di antara argumen yang dipisahkan koma." },
+                { id: 23, type: 'fill-in', text: "Isi variabel `kosong` dengan nilai `None`.", clue: "Python punya keyword khusus untuk merepresentasikan 'tidak ada nilai'.", answer: "kosong = None", explanation: "`None` adalah tipe data khusus di Python yang merepresentasikan ketiadaan nilai." },
+                { id: 24, type: 'multiple-choice', text: "Mana yang akan membuat komentar multi-baris?", clue: "Ini sebenarnya adalah string multi-baris, tetapi sering digunakan untuk tujuan ini.", options: ['"""komen"""', '/*komen*/', '# komen #', '// komen'], answerIndex: 0, explanation: "Tiga tanda kutip ganda (atau tunggal) di awal dan akhir digunakan untuk string multi-baris, yang seringkali difungsikan sebagai komentar." },
+                { id: 25, type: 'fill-in', text: "Variabel `kota = input('Asal: ')`. Apa tipe data `kota`?", clue: "Apa tipe data yang selalu dikembalikan oleh fungsi `input()`?", answer: "str", explanation: "Fungsi `input()` selalu mengembalikan nilai dalam bentuk string (`str`)." },
+                { id: 26, type: 'multiple-choice', text: "Python adalah bahasa pemrograman yang...", clue: "Apakah `myVar` dan `myvar` dianggap sama oleh Python?", options: ['Case-sensitive', 'Case-insensitive'], answerIndex: 0, explanation: "Case-sensitive berarti `nama` dan `Nama` dianggap sebagai dua variabel yang berbeda." },
+                { id: 27, type: 'fill-in', text: "Variabel `is_active` biasanya berisi nilai `True` atau `False`. Tipe datanya adalah...", clue: "Tipe data ini hanya punya dua kemungkinan nilai.", answer: "bool", explanation: "Singkatan dari boolean (`bool`)." },
+                { id: 28, type: 'multiple-choice', text: "Apa output dari `print(float(5))`?", clue: "Konversi dari `int` ke `float` akan menambahkan `.0`.", options: ["5", "5.0", "'5.0'", "Error"], answerIndex: 1, explanation: "Fungsi `float()` mengubah integer menjadi bilangan desimal (float)." },
+                { id: 29, type: 'fill-in', text: "Tuliskan kode lengkap untuk meminta nama pengguna dan menyimpannya di variabel `user_name`.", clue: "Gunakan fungsi untuk membaca input dan operator `=` untuk menugaskan.", answer: "user_name = input()", explanation: "Cara paling sederhana adalah menggunakan `input()` dan menugaskannya ke variabel." },
+                { id: 30, type: 'multiple-choice', text: "Manakah yang BUKAN keyword di Python?", clue: "Keyword adalah kata-kata yang sudah 'dipesan' oleh Python.", options: ['if', 'while', 'variable', 'for'], answerIndex: 2, explanation: "`variable` bukan kata kunci yang dilindungi di Python; itu adalah istilah umum." },
+                { id: 31, type: 'fill-in', text: "Simpan nilai `3.14` di variabel bernama `pi`.", clue: "Nilai ini adalah angka desimal.", answer: "pi = 3.14", explanation: "Deklarasi variabel float sama seperti integer." },
+                { id: 32, type: 'multiple-choice', text: "Apa kegunaan utama komentar?", clue: "Komentar adalah untuk manusia, bukan untuk mesin.", options: ['Memperlambat program', 'Menambah fungsi baru', 'Menjelaskan kode agar mudah dibaca', 'Menghasilkan error'], answerIndex: 2, explanation: "Komentar diabaikan oleh interpreter dan hanya berfungsi sebagai catatan untuk programmer." },
+                { id: 33, type: 'fill-in', text: "Lengkapi kode `print('Total:', 100, sep='___')` agar outputnya `Total:---100`.", clue: "`print()` memiliki parameter opsional untuk mengubah pemisah.", answer: "---", explanation: "Parameter `sep` pada `print()` menentukan karakter pemisah antar argumen." },
+                { id: 34, type: 'multiple-choice', text: "Manakah pernyataan yang benar tentang Python?", clue: "Pikirkan tentang bagaimana blok kode seperti `if` atau `for` didefinisikan.", options: ['Perlu titik koma di akhir baris', 'Sangat bergantung pada indentasi', 'Semua variabel harus dideklarasikan tipenya'], answerIndex: 1, explanation: "Indentasi (spasi di awal baris) sangat penting di Python untuk mendefinisikan blok kode." },
+                { id: 35, type: 'fill-in', text: "Tulis kode untuk mencetak teks `Python is fun!`.", clue: "Gunakan fungsi paling dasar untuk menampilkan sesuatu.", answer: "print('Python is fun!')", explanation: "Gunakan fungsi `print()` dengan string di dalamnya." }
+            ],
+            p_operator: [
+                { id: 1, type: 'multiple-choice', text: "Operator apa untuk mendapatkan sisa bagi (modulus)?", clue: "Bukan tanda bagi biasa.", options: ['/', '//', '%', '*'], answerIndex: 2, explanation: "Operator `%` (modulus) memberikan sisa dari pembagian." },
+                { id: 2, type: 'fill-in', text: "Hasil dari `10 ** 3` adalah...", clue: "Ini adalah operasi perpangkatan 10 pangkat 3.", answer: "1000", explanation: "Operator `**` digunakan untuk perpangkatan." },
+                { id: 3, type: 'multiple-choice', text: "Operator perbandingan 'tidak sama dengan' adalah...", clue: "Menggunakan tanda seru.", options: ['<>', '!=', '=/=', 'NOT'], answerIndex: 1, explanation: "Operator `!=` digunakan untuk memeriksa apakah dua nilai tidak sama." },
+                { id: 4, type: 'fill-in', text: "Hasil dari `17 // 5` (pembagian bulat) adalah...", clue: "Berapa kali 5 masuk ke 17 secara utuh?", answer: "3", explanation: "Operator `//` melakukan pembagian dan membulatkan hasilnya ke bawah." },
+                { id: 5, type: 'multiple-choice', text: "Operator logika untuk 'ATAU' adalah...", clue: "Terdiri dari 2 huruf.", options: ['or', 'and', 'not', '|'], answerIndex: 0, explanation: "Operator `or` menghasilkan `True` jika salah satu operandnya `True`." },
+                { id: 6, type: 'multiple-choice', text: "Jika `x = 8`, ekspresi `x > 5 and x < 8` akan menghasilkan...", clue: "Apakah 8 kurang dari 8?", options: ['True', 'False', 'Error'], answerIndex: 1, explanation: "Kondisi `x < 8` bernilai `False` karena 8 tidak kurang dari 8. Karena itu, `and` menghasilkan `False`." },
+                { id: 7, type: 'fill-in', text: "Kode `x = x + 1` dapat disingkat menjadi `x __ 1`.", clue: "Ini adalah operator penugasan gabungan.", answer: "+=", explanation: "Operator `+=` adalah singkatan untuk menambahkan nilai ke variabel yang ada." },
+                { id: 8, type: 'multiple-choice', text: "Apa hasil dari `not True`?", clue: "Operator ini membalikkan nilai boolean.", options: ['True', 'False', 'None', 'Error'], answerIndex: 1, explanation: "Operator `not` membalikkan nilai boolean dari `True` menjadi `False` dan sebaliknya." },
+                { id: 9, type: 'fill-in', text: "Hasil dari `5 * (2 + 3)` adalah...", clue: "Kerjakan yang di dalam kurung terlebih dahulu.", answer: "25", explanation: "Urutan operasi (presedensi) mendahulukan yang di dalam kurung." },
+                { id: 10, 'type': 'multiple-choice', 'text': "Operator `is` digunakan untuk memeriksa...", clue: "Ini lebih ketat daripada `==`.", 'options': ['Apakah nilainya sama', 'Apakah menunjuk ke objek yang sama di memori', 'Apakah tipenya sama'], 'answerIndex': 1, 'explanation': "Operator `is` memeriksa identitas objek, yaitu apakah dua variabel menunjuk ke lokasi memori yang sama persis." },
+                { id: 11, type: 'fill-in', text: "Hasil dari `20 % 6` adalah...", clue: "Berapa sisa jika 20 dibagi 6?", answer: "2", explanation: "6 * 3 = 18. Sisa dari 20 - 18 adalah 2." },
+                { id: 12, type: 'multiple-choice', text: "Operator `>` adalah contoh dari operator...", clue: "Operator ini membandingkan dua nilai.", options: ['Aritmatika', 'Penugasan', 'Logika', 'Perbandingan'], answerIndex: 3, explanation: "Operator `>` (lebih besar dari) adalah salah satu operator perbandingan (comparison)." },
+                { id: 13, type: 'fill-in', text: "Jika `y = 10`, setelah `y -= 3`, nilai `y` menjadi...", clue: "Ini adalah singkatan dari `y = y - 3`.", answer: "7", explanation: "Operator `-=` mengurangi nilai variabel." },
+                { id: 14, type: 'multiple-choice', text: "Apa hasil dari `'a' in 'banana'`?", clue: "Operator ini memeriksa keanggotaan.", options: ['True', 'False', 'Error'], answerIndex: 0, explanation: "Operator `in` menghasilkan `True` jika nilai di sebelah kiri ditemukan di dalam urutan di sebelah kanan." },
+                { id: 15, type: 'fill-in', text: "Lengkapi perbandingan untuk 'kurang dari atau sama dengan': `x __ 10`", clue: "Gabungan dari dua simbol.", answer: "<=", explanation: "Operator `<=` digunakan untuk 'kurang dari atau sama dengan'." },
+                { id: 16, type: 'multiple-choice', text: "Presedensi operator tertinggi di antara berikut adalah...", clue: "Operasi mana yang akan dikerjakan lebih dulu?", options: ['+', '**', '*', 'and'], answerIndex: 1, explanation: "Perpangkatan (`**`) memiliki presedensi tertinggi di antara pilihan tersebut." },
+                { id: 17, type: 'fill-in', text: "Hasil dari `True and False` adalah...", clue: "Keduanya harus benar agar `and` bernilai benar.", answer: "False", explanation: "Operator `and` hanya `True` jika kedua sisinya `True`." },
+                { id: 18, type: 'multiple-choice', text: "Operator `==` digunakan untuk...", clue: "Ini adalah operator perbandingan yang paling umum.", options: ['Menugaskan nilai', 'Memeriksa kesamaan nilai', 'Memeriksa identitas objek'], answerIndex: 1, explanation: "Operator `==` memeriksa apakah nilai dari dua operand adalah sama." },
+                { id: 19, type: 'fill-in', text: "Jika `z = 5`, setelah `z *= 4`, nilai `z` menjadi...", clue: "Singkatan dari `z = z * 4`", answer: "20", explanation: "Operator `*=` mengalikan variabel dengan nilai." },
+                { id: 20, type: 'multiple-choice', text: "Apa hasil dari `'x' not in 'abc'`?", clue: "Ini adalah kebalikan dari operator `in`.", options: ['True', 'False', 'Error'], answerIndex: 0, explanation: "Karena 'x' tidak ditemukan dalam 'abc', maka `not in` menghasilkan `True`." },
+                { id: 21, type: 'fill-in', text: "Hasil dari `(False or True) and True` adalah...", clue: "Kerjakan dalam kurung dulu.", answer: "True", explanation: "`False or True` adalah `True`. Kemudian `True and True` adalah `True`." },
+                { id: 22, type: 'multiple-choice', text: "Operator `&` adalah operator bitwise. Apa padanannya dalam logika boolean?", clue: "Operator logika yang setara.", options: ['or', 'and', 'not'], answerIndex: 1, explanation: "Operator bitwise `&` (AND) seringkali berkorespondensi dengan operator logika `and`." },
+                { id: 23, type: 'fill-in', text: "Lengkapi kode untuk memeriksa apakah `nilai` berada di antara 80 dan 90 (inklusif): `80 <= nilai __ 90`.", clue: "Operator logika untuk 'DAN'.", answer: "and", explanation: "Untuk memeriksa rentang, Anda perlu memastikan kedua kondisi terpenuhi." },
+                { id: 24, type: 'multiple-choice', text: "Manakah yang BUKAN operator perbandingan?", clue: "Cari yang fungsinya bukan untuk membandingkan.", options: ['>=', '<=', '==', '='], answerIndex: 3, explanation: "Simbol `=` adalah operator penugasan (assignment), bukan perbandingan." },
+                { id: 25, type: 'fill-in', text: "Hasil dari `10 / 4` adalah...", clue: "Ini adalah pembagian biasa, bukan pembagian bulat.", answer: "2.5", explanation: "Operator `/` selalu menghasilkan `float`." },
+                { id: 26, type: 'multiple-choice', text: "Jika `a = [1, 2]` dan `b = [1, 2]`, `a == b` menghasilkan `True`. Apa hasil `a is b`?", clue: "`is` memeriksa lokasi memori.", options: ['True', 'False', 'Tergantung'], answerIndex: 1, explanation: "Meskipun nilainya sama, `a` dan `b` adalah dua objek list yang berbeda di memori, sehingga `is` menghasilkan `False`." },
+                { id: 27, type: 'fill-in', text: "Lengkapi kode `x = 5`, `y = 10`. `x > y` akan menghasilkan `___`.", clue: "Apakah 5 lebih besar dari 10?", answer: "False", explanation: "Perbandingan `5 > 10` adalah salah." },
+                { id: 28, type: 'multiple-choice', text: "Operator manakah yang akan dievaluasi terakhir dalam ekspresi `5 + 3 * 2`?", clue: "Ingat aturan presedensi operator (PEMDAS/BODMAS).", options: ['*', '+', 'Tidak ada'], answerIndex: 1, explanation: "Perkalian (`*`) dievaluasi sebelum penjumlahan (`+`)." },
+                { id: 29, type: 'fill-in', text: "Lengkapi kode `x = 10`, `y = 10`. `x == y` akan menghasilkan `___`.", clue: "Apakah nilai keduanya sama?", answer: "True", explanation: "Operator `==` memeriksa kesamaan nilai." },
+                { id: 30, type: 'multiple-choice', text: "Apa nama umum untuk operator seperti `and`, `or`, `not`?", clue: "Mereka beroperasi pada nilai boolean.", options: ['Operator Aritmatika', 'Operator Logika', 'Operator Perbandingan'], answerIndex: 1, explanation: "Ini adalah operator logika (logical operators)." },
+                { id: 31, type: 'fill-in', text: "Jika `diskon = 0`, `not diskon` akan dievaluasi menjadi...", clue: "Di konteks boolean, angka 0 dianggap `False`.", answer: "True", explanation: "Angka 0 dievaluasi sebagai `False`. `not False` adalah `True`." },
+                { id: 32, type: 'multiple-choice', text: "Operator `^` adalah operator bitwise XOR. Apa artinya?", clue: "Menghasilkan `True` jika inputnya berbeda.", options: ['`True` jika keduanya `True`', '`True` jika salah satu `True`', '`True` jika hanya salah satu yang `True`'], answerIndex: 2, explanation: "XOR (Exclusive OR) hanya bernilai `True` jika inputnya tidak sama." },
+                { id: 33, type: 'fill-in', text: "Hasil dari `3 * 'ha'` adalah...", clue: "Operator `*` pada string berfungsi sebagai repetisi.", answer: "'hahaha'", explanation: "Mengalikan string dengan integer akan mengulang string tersebut." },
+                { id: 34, type: 'multiple-choice', text: "Jika `x=True`, apa hasil dari `x or y` (tanpa mengetahui `y`)?", clue: "Pikirkan tentang 'short-circuiting'.", options: ['True', 'False', 'Tergantung nilai y'], answerIndex: 0, explanation: "Dalam operasi `or`, jika operand pertama sudah `True`, hasilnya pasti `True` dan Python tidak perlu mengevaluasi operand kedua." },
+                { id: 35, type: 'fill-in', text: "Lengkapi kode `x = 100`, `x /= 10`. Nilai akhir `x` adalah...", clue: "Ini adalah pembagian dan penugasan.", answer: "10.0", explanation: "Operator `/=` membagi variabel dan menugaskan hasilnya. Pembagian dengan `/` selalu menghasilkan float." }
+            ],
+            p_string: [
+                { id: 1, type: 'multiple-choice', text: "Metode string apa yang mengubah semua huruf menjadi huruf kecil?", clue: "Kebalikan dari `.upper()`.", options: ['.lowercase()', '.small()', '.lower()', '.casefold()'], answerIndex: 2, explanation: "Metode `.lower()` mengembalikan salinan string dengan semua huruf menjadi kecil." },
+                { id: 2, type: 'fill-in', text: "Jika `s = 'Python'`, hasil dari `s[-1]` adalah...", clue: "Indeks negatif dihitung dari belakang.", answer: "'n'", explanation: "Indeks `[-1]` akan mengambil karakter terakhir dari sebuah string." },
+                { id: 3, type: 'multiple-choice', text: "Bagaimana cara mendapatkan panjang dari string `kata`?", clue: "Fungsi ini umum untuk semua tipe data sekuensial.", options: ['kata.length()', 'length(kata)', 'len(kata)', 'kata.size()'], answerIndex: 2, explanation: "Fungsi `len()` digunakan untuk mendapatkan jumlah karakter dalam sebuah string." },
+                { id: 4, type: 'fill-in', text: "Jika `s = 'Belajar Python'`, hasil dari `s[0:7]` (slicing) adalah...", clue: "Indeks akhir (7) tidak termasuk.", answer: "'Belajar'", explanation: "Slicing `[0:7]` mengambil karakter dari indeks 0 hingga sebelum indeks 7." },
+                { id: 5, type: 'multiple-choice', text: "Manakah cara yang benar untuk menyisipkan variabel `nama` ke dalam string menggunakan f-string?", clue: "String harus diawali dengan huruf 'f'.", options: ['f"Halo {nama}"', '"Halo {nama}"', 's"Halo {nama}"'], answerIndex: 0, explanation: "F-string (formatted string literals) diawali dengan 'f' dan variabel disisipkan dalam kurung kurawal `{}`." },
+                { id: 6, type: 'fill-in', text: "Metode `.strip()` pada string `'  halo  '` akan menghasilkan...", clue: "Metode ini membersihkan spasi di awal dan akhir.", answer: "'halo'", explanation: "Metode `.strip()` menghapus whitespace dari awal dan akhir string." },
+                { id: 7, type: 'multiple-choice', text: "Metode apa untuk mengganti semua kemunculan substring dengan yang lain?", clue: "Mirip kata 'mengganti' dalam bahasa Inggris.", options: ['.change()', '.substitute()', '.replace()', '.modify()'], answerIndex: 2, explanation: "Metode `.replace('lama', 'baru')` digunakan untuk mengganti substring." },
+                { id: 8, type: 'fill-in', text: "Hasil dari `'Halo' + ' ' + 'Dunia'` adalah...", clue: "Operator `+` pada string berfungsi untuk menggabungkan.", answer: "'Halo Dunia'", explanation: "Operator `+` menggabungkan (concatenate) string." },
+                { id: 9, type: 'multiple-choice', text: "Metode apa yang memecah string menjadi list berdasarkan pemisah?", clue: "Mirip kata 'membagi' dalam bahasa Inggris.", options: ['.break()', '.divide()', '.split()', '.separate()'], answerIndex: 2, explanation: "Metode `.split()` memecah string menjadi list. Contoh: `'a-b-c'.split('-')` menjadi `['a', 'b', 'c']`." },
+                { id: 10, type: 'fill-in', text: "Jika `s = 'koding'`, `s.capitalize()` akan menghasilkan...", clue: "Metode ini hanya mengubah huruf pertama.", answer: "'Koding'", explanation: "Metode `.capitalize()` mengubah huruf pertama string menjadi kapital dan sisanya menjadi kecil." },
+                { id: 11, type: 'multiple-choice', text: "Bagaimana cara memeriksa apakah string `s` diakhiri dengan 'py'?", clue: "Gunakan metode yang namanya `endsWith`.", options: ["s.endsWith('.py')", "s.ends_with('.py')", "s.endswith('.py')"], answerIndex: 2, explanation: "Metode `.endswith()` memeriksa apakah string diakhiri dengan substring tertentu." },
+                { id: 12, 'type': 'fill-in', 'text': "Jika `s = 'abc'`, hasil dari `s * 3` adalah...", 'clue': "Operator `*` pada string berarti repetisi.", 'answer': "'abcabcabc'", 'explanation': "Mengalikan string dengan integer akan mengulang string tersebut." },
+                { id: 13, 'type': 'multiple-choice', 'text': "Metode `.find('a')` pada string `'hujan'` akan menghasilkan...", 'clue': "Metode ini mencari indeks. Jika tidak ditemukan, apa yang dikembalikan?", 'options': ['2', '3', '-1', 'Error'], 'answerIndex': 2, 'explanation': "Metode `.find()` mengembalikan -1 jika substring tidak ditemukan." },
+                { id: 14, 'type': 'fill-in', 'text': "Lengkapi f-string untuk menampilkan `usia` (variabel): `print(f'Umur saya {___}')`", 'clue': "Variabel diletakkan di dalam kurung kurawal.", 'answer': "usia", 'explanation': "Dalam f-string, variabel ditempatkan di dalam `{}`." },
+                { id: 15, 'type': 'multiple-choice', 'text': "Metode apa yang mengubah huruf pertama setiap kata menjadi kapital?", 'clue': "Cocok untuk judul.", 'options': ['.capitalize()', '.upper()', '.title()', '.header()'], 'answerIndex': 2, 'explanation': "Metode `.title()` mengonversi string menjadi format judul." },
+                { id: 16, 'type': 'fill-in', 'text': "Jika `s = '123'`, `s.isdigit()` akan menghasilkan...", 'clue': "Apakah semua karakter adalah digit?", 'answer': "True", 'explanation': "Metode `.isdigit()` memeriksa apakah semua karakter dalam string adalah digit." },
+                { id: 17, 'type': 'multiple-choice', 'text': "Bagaimana cara mengakses karakter ke-3 dari string `s`?", 'clue': "Ingat, indeks dimulai dari 0.", 'options': ['s[3]', 's(3)', 's[2]', 's.char(3)'], 'answerIndex': 2, 'explanation': "Karakter ke-3 berada di indeks 2 karena pengindeksan dimulai dari 0." },
+                { id: 18, 'type': 'fill-in', 'text': "String `s = 'PYTHON'`. `s[1:4]` akan menghasilkan...", 'clue': "Ambil dari indeks 1 sampai sebelum indeks 4.", 'answer': "'YTH'", 'explanation': "Slicing mengambil karakter dari indeks awal hingga sebelum indeks akhir." },
+                { id: 19, 'type': 'multiple-choice', 'text': "Metode `.startswith('http')` digunakan untuk...", 'clue': "Kebalikan dari `.endswith()`.", 'options': ['Memeriksa apakah string adalah URL', 'Memeriksa apakah string diawali dengan `http`', 'Menghapus `http` dari awal'], 'answerIndex': 1, 'explanation': "Metode `.startswith()` memeriksa apakah string diawali dengan substring tertentu." },
+                { id: 20, 'type': 'fill-in', 'text': "Tuliskan karakter 'escape' untuk baris baru (newline) dalam string.", 'clue': "Dimulai dengan backslash.", 'answer': "\\n", 'explanation': "Karakter `\\n` merepresentasikan baris baru dalam string." },
+                { id: 21, 'type': 'multiple-choice', 'text': "Apa output dari `len(' a b ')`?", 'clue': "Spasi juga dihitung sebagai karakter.", 'options': ['3', '5', '2'], 'answerIndex': 1, 'explanation': "Fungsi `len()` menghitung semua karakter, termasuk spasi." },
+                { id: 22, 'type': 'fill-in', 'text': "Jika `kata = 'apel'`, `kata.replace('p', 'b')` menghasilkan...", 'clue': "Ganti satu huruf dengan huruf lain.", 'answer': "'abel'", 'explanation': "Metode `.replace()` mengganti semua kemunculan substring." },
+                { id: 23, 'type': 'multiple-choice', 'text': "Bagaimana cara membuat string multi-baris?", 'clue': "Gunakan tiga tanda kutip.", 'options': ['Dengan `//`', 'Dengan `"""` atau `\'\'\'`', 'Dengan `#`'], 'answerIndex': 1, 'explanation': "String yang diapit oleh tiga tanda kutip ganda atau tunggal dapat mencakup beberapa baris." },
+                { id: 24, 'type': 'fill-in', 'text': "Jika `s = 'putih'`, `s[-3:]` menghasilkan...", 'clue': "Mulai dari karakter ketiga dari belakang sampai akhir.", 'answer': "'tih'", 'explanation': "Slicing dengan indeks negatif dapat digunakan untuk mengambil bagian akhir string." },
+                { id: 25, 'type': 'multiple-choice', 'text': "Metode `.islower()` pada `'halo'` akan menghasilkan...", 'clue': "Apakah semua hurufnya kecil?", 'options': ['True', 'False'], 'answerIndex': 0, 'explanation': "Metode `.islower()` memeriksa apakah semua karakter huruf dalam string adalah huruf kecil." },
+                { id: 26, 'type': 'fill-in', 'text': "Lengkapi kode untuk menggabungkan list string `['a', 'b', 'c']` menjadi `'a-b-c'`: `'-'.___(['a', 'b', 'c'])`", 'clue': "Metode string ini adalah kebalikan dari `.split()`.", 'answer': "join", 'explanation': "Metode `.join()` digunakan pada string pemisah untuk menggabungkan elemen-elemen dari sebuah iterable." },
+                { id: 27, 'type': 'multiple-choice', 'text': "Apa itu 'slicing' pada string?", 'clue': "Ini adalah cara untuk mengambil sebagian dari string.", 'options': ['Membagi string', 'Mengambil substring berdasarkan indeks', 'Menghapus karakter'], 'answerIndex': 1, 'explanation': "Slicing adalah teknik untuk mengekstrak sebagian dari urutan (seperti string) menggunakan sintaks `[start:stop]`." },
+                { id: 28, 'type': 'fill-in', 'text': "Jika `s = '    '`, `s.isspace()` akan menghasilkan...", 'clue': "Apakah semua karakter adalah whitespace?", 'answer': "True", 'explanation': "Metode `.isspace()` memeriksa apakah semua karakter adalah whitespace (spasi, tab, dll)." },
+                { id: 29, 'type': 'multiple-choice', 'text': "String di Python bersifat 'immutable'. Apa artinya?", 'clue': "Apakah Anda bisa mengubah karakter di dalam string yang ada?", 'options': ['Bisa diubah', 'Tidak bisa diubah', 'Harus berupa teks'], 'answerIndex': 1, 'explanation': "Immutable berarti sekali string dibuat, isinya tidak dapat diubah. Metode seperti `.replace()` akan membuat string baru." },
+                { id: 30, 'type': 'fill-in', 'text': "Jika `url = 'google.com'`, `url.removesuffix('.com')` menghasilkan...", 'clue': "Metode baru di Python 3.9+ untuk menghapus akhiran.", 'answer': "'google'", 'explanation': "Metode `.removesuffix()` (Python 3.9+) adalah cara aman untuk menghapus akhiran dari string." },
+                { id: 31, 'type': 'multiple-choice', 'text': "Untuk menampilkan tanda kutip di dalam string, Anda bisa...", 'clue': "Gunakan tanda kutip yang berbeda atau karakter 'escape'.", 'options': ["Menggunakan `\\'`", "Menggunakan tanda kutip yang berbeda untuk mengapit", "Keduanya benar"], 'answerIndex': 2, 'explanation': "Anda bisa menggunakan `\"` di dalam string `'...'`, `'` di dalam string `\"...\"`, atau menggunakan backslash `\` sebagai karakter escape." },
+                { id: 32, 'type': 'fill-in', 'text': "Jika `s = 'belajar'`, `s.index('a')` menghasilkan...", 'clue': "Sama seperti `.find()`, tapi akan error jika tidak ditemukan.", 'answer': "3", 'explanation': "Metode `.index()` mengembalikan indeks pertama dari substring yang ditemukan." },
+                { id: 33, 'type': 'multiple-choice', 'text': "Apa output dari `print('Nama:\\tAndi')`?", 'clue': "`\\t` adalah karakter khusus.", 'options': ["Nama:\\tAndi", "Nama: Andi", "Nama:    Andi"], 'answerIndex': 2, 'explanation': "Karakter `\\t` adalah escape sequence untuk Tab, yang menyisipkan spasi horizontal." },
+                { id: 34, 'type': 'fill-in', 'text': "Gunakan f-string untuk membuat string `'Hasilnya adalah 25'` dari variabel `x = 25`.", 'clue': "Formatnya `f'teks {variabel}'`", 'answer': "f'Hasilnya adalah {x}'", 'explanation': "f-string adalah cara paling umum dan mudah untuk memformat string di Python modern." },
+                { id: 35, 'type': 'multiple-choice', 'text': "Mana yang akan menghasilkan `True`?", 'clue': "Periksa apakah semua karakter adalah huruf.", 'options': ["'Python3'.isalpha()", "'Python'.isalpha()", "'Python!'.isalpha()"], 'answerIndex': 1, 'explanation': "Metode `.isalpha()` hanya menghasilkan `True` jika semua karakter dalam string adalah huruf dan tidak kosong." }
+            ],
+            m_kondisional: [
+                { id: 1, type: 'multiple-choice', text: "Keyword apa yang digunakan jika kondisi `if` tidak terpenuhi, sebelum blok `else`?", clue: "Merupakan singkatan dari 'else if'.", options: ['otherwise', 'elif', 'then', 'except'], answerIndex: 1, explanation: "`elif` digunakan untuk memeriksa kondisi lain jika `if` sebelumnya salah." },
+                { id: 2, type: 'fill-in', text: "Lengkapi kode untuk mencetak 'Lulus' jika `nilai` lebih besar atau sama dengan 75:\n`if nilai >= 75:___`", clue: "Blok kode di dalam `if` harus diindentasi.", answer: "print('Lulus')", explanation: "Statement di dalam blok `if` harus diindentasi (menjorok ke dalam)." },
+                { id: 3, type: 'multiple-choice', text: "Apa yang akan dicetak jika `x = 10`?\n`if x > 10:\n  print('A')\nelif x == 10:\n  print('B')\nelse:\n  print('C')`", clue: "Kondisi mana yang akan terpenuhi pertama kali?", options: ['A', 'B', 'C', 'Tidak ada output'], answerIndex: 1, explanation: "Kondisi `x == 10` pada `elif` terpenuhi, sehingga 'B' dicetak." },
+                { id: 4, type: 'fill-in', text: "Lengkapi blok `else` untuk mencetak 'Gagal':\n`if nilai >= 75:\n  print('Lulus')\n____:\n  print('Gagal')`", clue: "Blok ini dieksekusi jika semua kondisi di atasnya salah.", answer: "else", explanation: "`else` menangkap semua kasus yang tidak cocok dengan `if` atau `elif`." },
+                { id: 5, type: 'multiple-choice', text: "Manakah operator yang tepat untuk memeriksa 'atau' dalam kondisi `if`?", clue: "Terdiri dari 2 huruf.", options: ['and', 'or', 'not', '&'], answerIndex: 1, explanation: "Operator `or` menghasilkan `True` jika salah satu dari kondisinya `True`." },
+                { id: 6, type: 'multiple-choice', text: "Apa output dari kode berikut jika `suhu = 30`?\n`if suhu > 25:\n  print('Panas')\nelif suhu > 15:\n  print('Hangat')`", clue: "Python berhenti pada kondisi pertama yang `True`.", options: ['Panas', 'Hangat', 'PanasHangat', 'Tidak ada'], answerIndex: 0, explanation: "Karena `30 > 25` adalah `True`, blok `if` pertama dieksekusi dan sisanya diabaikan." },
+                { id: 7, type: 'fill-in', text: "Lengkapi kode untuk memeriksa apakah `status` adalah 'aktif' DAN `level` lebih dari 5: `if status == 'aktif' ___ level > 5:`", clue: "Gunakan operator logika untuk 'DAN'.", answer: "and", explanation: "Operator `and` memerlukan kedua kondisi untuk bernilai `True`." },
+                { id: 8, type: 'multiple-choice', text: "Struktur `if-elif-else` disebut juga...", clue: "Ini adalah cara untuk mengontrol alur program.", options: ['Perulangan', 'Fungsi', 'Percabangan', 'Variabel'], answerIndex: 2, explanation: "Struktur ini membuat 'cabang' dalam alur eksekusi program berdasarkan kondisi." },
+                { id: 9, type: 'fill-in', text: "Apa output jika `angka = 0`?\n`if angka:\n  print('True')\nelse:\n  print('False')`", clue: "Di konteks boolean, angka 0 dianggap `False`.", answer: "False", explanation: "Nilai numerik 0, string kosong, dan list kosong dievaluasi sebagai `False` dalam kondisi boolean." },
+                { id: 10, type: 'multiple-choice', text: "Manakah sintaks yang benar untuk 'nested if' (if bersarang)?", clue: "Indentasi adalah kuncinya.", options: ['`if a: if b: ...`', '`if a and if b: ...`', '`if a: \n  if b: ...`', '`if a, b: ...`'], answerIndex: 2, explanation: "`if` kedua harus diindentasi di dalam blok `if` pertama." },
+                { id: 11, type: 'fill-in', text: "Lengkapi kode untuk memeriksa apakah `x` TIDAK sama dengan 10: `if x __ 10:`", clue: "Gunakan operator 'tidak sama dengan'.", answer: "!=", explanation: "Operator `!=` digunakan untuk memeriksa ketidaksamaan." },
+                { id: 12, type: 'multiple-choice', text: "Apa yang terjadi jika tidak ada `if`, `elif`, atau `else` yang kondisinya terpenuhi?", clue: "Apakah program akan error?", options: ['Error', 'Blok terakhir dieksekusi', 'Tidak ada yang dieksekusi', 'Program berhenti'], answerIndex: 2, explanation: "Jika tidak ada kondisi yang cocok, blok kode di dalamnya akan dilewati dan program lanjut ke baris berikutnya." },
+                { id: 13, type: 'fill-in', text: "Lengkapi 'ternary operator' untuk mendapatkan 'Genap' jika `x % 2 == 0`, selain itu 'Ganjil': `hasil = 'Genap' if x % 2 == 0 ____ 'Ganjil'`", clue: "Ini adalah sintaks `if-else` dalam satu baris.", answer: "else", explanation: "Sintaksnya adalah `nilai_jika_benar if kondisi else nilai_jika_salah`." },
+                { id: 14, type: 'multiple-choice', text: "Jika `list_kosong = []`, apa hasil dari `if list_kosong:`?", clue: "Struktur data kosong dianggap `False`.", options: ['Kondisi akan True', 'Kondisi akan False', 'Akan terjadi error'], answerIndex: 1, explanation: "List, tuple, dictionary, dan set yang kosong dievaluasi sebagai `False`." },
+                { id: 15, type: 'fill-in', text: "Lengkapi kode untuk memeriksa apakah `huruf` adalah 'a' atau 'i' atau 'u': `if huruf in ____:`", clue: "Gunakan struktur data yang berisi vokal tersebut.", answer: "('a', 'i', 'u')", explanation: "Menggunakan `in` dengan tuple atau list adalah cara yang efisien untuk memeriksa beberapa nilai." },
+                { id: 16, type: 'multiple-choice', text: "Apa perbedaan utama `if` dan `elif`?", clue: "`elif` bergantung pada `if` sebelumnya.", options: ['Tidak ada beda', '`elif` hanya dievaluasi jika `if` sebelumnya `False`', '`elif` lebih cepat'], answerIndex: 1, explanation: "`elif` hanya akan diperiksa jika kondisi `if` (dan `elif` lain) di atasnya tidak terpenuhi." },
+                { id: 17, 'type': 'fill-in', 'text': "Kode `if not is_valid:` setara dengan `if is_valid == ____:`", 'clue': "Gunakan nilai boolean.", 'answer': "False", 'explanation': "`not` membalik nilai boolean, jadi `not True` adalah `False`." },
+                { id: 18, 'type': 'multiple-choice', 'text': "Manakah yang akan dievaluasi menjadi `True`?", 'clue': "Ingat urutan evaluasi `and` dan `or`.", 'options': ['`True and False`', '`False or (True and False)`', '`True or False`'], 'answerIndex': 2, 'explanation': "`or` hanya butuh satu sisi `True`. `True or False` akan menghasilkan `True`." },
+                { id: 19, 'type': 'fill-in', 'text': "Lengkapi kode: `if umur < 18: print('Remaja') ____ umur < 60: print('Dewasa')`", 'clue': "Gunakan keyword untuk kondisi kedua.", 'answer': "elif", 'explanation': "`elif` adalah cara yang tepat untuk menyambung kondisi setelah `if`." },
+                { id: 20, 'type': 'multiple-choice', 'text': "Apa output jika `nama = ''`?\n`if nama:\n  print('Ada nama')\nelse:\n  print('Nama kosong')`", 'clue': "String kosong dianggap `False`.", 'options': ['Ada nama', 'Nama kosong', 'Error'], 'answerIndex': 1, 'explanation': "String kosong dievaluasi sebagai `False` dalam konteks boolean." },
+                { id: 21, 'type': 'fill-in', 'text': "Tulis kondisi untuk memeriksa apakah `nilai` berada di luar rentang 0-100: `if nilai < 0 __ nilai > 100:`", 'clue': "Gunakan operator 'ATAU'.", 'answer': "or", 'explanation': "Sebuah nilai tidak mungkin kurang dari 0 dan lebih dari 100 secara bersamaan, jadi gunakan `or`." },
+                { id: 22, 'type': 'multiple-choice', 'text': "Keyword `pass` di dalam `if` digunakan untuk...", 'clue': "Kadang kita butuh blok yang tidak melakukan apa-apa.", 'options': ['Menghentikan program', 'Melanjutkan ke iterasi berikutnya', 'Tidak melakukan apa-apa (placeholder)'], 'answerIndex': 2, 'explanation': "`pass` adalah statement kosong yang digunakan ketika sintaks memerlukan sebuah statement tapi tidak ada aksi yang perlu dilakukan." },
+                { id: 23, 'type': 'fill-in', 'text': "Lengkapi ternary operator: `status = 'Aktif' ___ user.is_active else 'Nonaktif'`", 'clue': "Bagian tengah dari ternary operator.", 'answer': "if", 'explanation': "Sintaks ternary adalah `[nilai_true] if [kondisi] else [nilai_false]`." },
+                { id: 24, 'type': 'multiple-choice', 'text': "Jika `a=5, b=10, c=5`, kondisi manakah yang `True`?", 'clue': "Periksa setiap opsi dengan seksama.", 'options': ['`a == c and b < a`', '`a != c or b == a`', '`a == c and b > a`'], 'answerIndex': 2, 'explanation': "`a == c` (5==5) adalah `True`, dan `b > a` (10>5) adalah `True`. `True and True` adalah `True`." },
+                { id: 25, 'type': 'fill-in', 'text': "Lengkapi kode: `if 'apel' in keranjang: ____` (blok ini tidak melakukan apa-apa)", 'clue': "Gunakan keyword untuk blok kosong.", 'answer': "pass", 'explanation': "`pass` digunakan sebagai placeholder untuk blok kode yang akan diimplementasikan nanti." },
+                { id: 26, 'type': 'multiple-choice', 'text': "Apa output jika `x=True`?\n`if not x:\n  print('A')\nelse:\n  print('B')`", 'clue': "`not` membalikkan nilai boolean.", 'options': ['A', 'B', 'Error'], 'answerIndex': 1, 'explanation': "`not True` adalah `False`, jadi blok `else` yang akan dieksekusi." },
+                { id: 27, 'type': 'fill-in', 'text': "Tulis kondisi untuk memeriksa apakah `kata` adalah string kosong.", 'clue': "Ada beberapa cara, salah satunya `if not kata:`", 'answer': "if not kata:", 'explanation': "Cara paling Pythonic untuk memeriksa string kosong adalah `if not nama_variabel:`." },
+                { id: 28, 'type': 'multiple-choice', 'text': "Manakah yang BUKAN nilai 'falsy' (dianggap False) di Python?", 'clue': "Cari nilai yang tidak dianggap kosong atau nol.", 'options': ['`0`', '`[]`', '`" "`', '`None`'], 'answerIndex': 2, 'explanation': 'String yang berisi spasi `" "` tidak kosong, sehingga dianggap `True` (truthy).' },
+                { id: 29, 'type': 'fill-in', 'text': "Lengkapi kode: `if nilai > 100: print('Error'); ____`", 'clue': "Gunakan fungsi untuk keluar dari program.", 'answer': "exit()", 'explanation': "Fungsi `exit()` dapat digunakan untuk menghentikan eksekusi skrip." },
+                { id: 30, 'type': 'multiple-choice', 'text': "Apa itu 'short-circuiting' dalam evaluasi logika?", 'clue': "Ini adalah optimisasi yang dilakukan interpreter.", 'options': ['Python selalu mengevaluasi semua kondisi', 'Python berhenti mengevaluasi jika hasil sudah pasti', 'Hanya terjadi pada `and`'], 'answerIndex': 1, 'explanation': "Misalnya, dalam `False and ...`, Python tidak akan mengevaluasi bagian kedua karena hasilnya sudah pasti `False`." },
+                { id: 31, 'type': 'fill-in', 'text': "Lengkapi kode untuk memeriksa apakah tipe data `x` adalah `int`: `if type(x) __ int:`", 'clue': "Gunakan operator perbandingan identitas.", 'answer': "is", 'explanation': "Meskipun `==` bisa, `is` lebih umum digunakan untuk membandingkan tipe data." },
+                { id: 32, 'type': 'multiple-choice', 'text': "Apa output jika `x=1, y=2`?\n`print('A') if x > y else print('B')`", 'clue': "Ini adalah ternary operator.", 'options': ['A', 'B', 'A B'], 'answerIndex': 1, 'explanation': "Kondisi `x > y` (1 > 2) adalah `False`, jadi statement setelah `else` yang dieksekusi." },
+                { id: 33, 'type': 'fill-in', 'text': "Tulis kondisi untuk memeriksa apakah `x` genap.", 'clue': "Gunakan operator modulus.", 'answer': "if x % 2 == 0:", 'explanation': "Angka genap adalah angka yang habis dibagi 2 (sisa baginya 0)." },
+                { id: 34, 'type': 'multiple-choice', 'text': "Manakah cara paling 'Pythonic' untuk memeriksa `x` di antara 0 dan 10?", 'clue': "Python punya cara elegan untuk perbandingan berantai.", 'options': ['`x >= 0 and x <= 10`', '`0 <= x <= 10`', '`x in range(11)`'], 'answerIndex': 1, 'explanation': "Python mengizinkan perbandingan berantai (`0 <= x <= 10`), yang lebih mudah dibaca." },
+                { id: 35, 'type': 'fill-in', 'text': "Lengkapi kode: `if isLoggedIn ____ isSuperuser: print('Akses Penuh')`", 'clue': "Kondisi: jika pengguna login ATAU dia adalah superuser.", 'answer': "or", 'explanation': "Operator `or` tepat digunakan ketika salah satu dari beberapa kondisi cukup untuk melanjutkan." }
+            ],
+            m_struktur_data_1: [
+                { id: 1, type: 'multiple-choice', text: "Struktur data apa yang ditandai dengan kurung siku `[]`?", clue: "Ini adalah koleksi data yang terurut dan bisa diubah.", options: ['Tuple', 'List', 'Set', 'Dictionary'], answerIndex: 1, explanation: "List dibuat menggunakan kurung siku `[]`." },
+                { id: 2, type: 'fill-in', text: "Jika `angka = [10, 20, 30]`, akses elemen pertama dengan `angka[__]`.", clue: "Indeks di Python dimulai dari 0.", answer: "0", explanation: "Elemen pertama selalu berada di indeks 0." },
+                { id: 3, 'type': 'multiple-choice', 'text': "Metode apa untuk menambahkan elemen ke akhir sebuah list?", 'clue': "Mirip kata 'menambahkan' dalam bahasa Inggris.", 'options': ['`.add()`', '`.push()`', '`.insert()`', '`.append()`'], 'answerIndex': 3, 'explanation': "Metode `.append()` digunakan untuk menambahkan satu item ke akhir list." },
+                { id: 4, 'type': 'fill-in', 'text': "Jika `huruf = ('a', 'b', 'c')`, ini adalah contoh dari sebuah...", 'clue': "Koleksi data yang terurut dan TIDAK bisa diubah.", 'answer': "tuple", 'explanation': "Tuple dibuat menggunakan kurung biasa `()` dan bersifat immutable." },
+                { id: 5, 'type': 'multiple-choice', 'text': "Bagaimana cara mendapatkan jumlah elemen dalam list `data`?", 'clue': "Fungsi yang sama seperti pada string.", 'options': ['`data.size()`', '`len(data)`', '`data.length()`', '`count(data)`'], 'answerIndex': 1, 'explanation': "Fungsi `len()` mengembalikan jumlah item dalam list atau tuple." },
+                { id: 6, 'type': 'multiple-choice', 'text': "Manakah pernyataan yang BENAR tentang Tuple?", 'clue': "Pikirkan tentang sifat 'immutable'.", 'options': ['Bisa diubah setelah dibuat', 'Elemennya bisa dihapus', 'Tidak bisa diubah (immutable)', 'Harus berisi tipe data yang sama'], 'answerIndex': 2, 'explanation': "Tuple bersifat immutable, artinya isinya tidak dapat diubah setelah tuple dibuat." },
+                { id: 7, 'type': 'fill-in', 'text': "Lengkapi kode untuk menghapus elemen 'apel' dari list `buah`: `buah.remove('___')`", 'clue': "Sebutkan nilai yang ingin dihapus.", 'answer': "apel", 'explanation': "Metode `.remove()` menghapus kemunculan pertama dari nilai yang ditentukan." },
+                { id: 8, 'type': 'multiple-choice', 'text': "Jika `data = [1, 2, 3, 4, 5]`, `data[1:3]` akan menghasilkan...", 'clue': "Slicing mengambil dari indeks awal hingga SEBELUM indeks akhir.", 'options': ['`[1, 2]`', '`[2, 3]`', '`[1, 2, 3]`', '`[2, 3, 4]`'], 'answerIndex': 1, 'explanation': "Slicing `[1:3]` mengambil elemen dari indeks 1 (`2`) hingga sebelum indeks 3 (`3`)." },
+                { id: 9, 'type': 'fill-in', 'text': "Untuk menggabungkan dua list, `list1` dan `list2`, gunakan operator `__`.", 'clue': "Operator yang sama untuk menggabungkan string.", 'answer': "+", 'explanation': "Operator `+` dapat digunakan untuk menggabungkan dua list menjadi satu list baru." },
+                { id: 10, 'type': 'multiple-choice', 'text': "Metode apa untuk menyisipkan nilai `5` pada indeks ke-1 di list `angka`?", 'clue': "Gunakan metode 'sisipkan'.", 'options': ['`angka.add(1, 5)`', '`angka.append(1, 5)`', '`angka.insert(1, 5)`'], 'answerIndex': 2, 'explanation': "Metode `.insert(indeks, nilai)` digunakan untuk menyisipkan elemen pada posisi tertentu." },
+                { id: 11, 'type': 'fill-in', 'text': "Jika `t = (10, 20, 30)`, `t[-1]` akan menghasilkan...", 'clue': "Indeks negatif mengambil dari belakang.", 'answer': "30", 'explanation': "Indeks `[-1]` selalu mengacu pada elemen terakhir." },
+                { id: 12, 'type': 'multiple-choice', 'text': "Bagaimana cara mengubah elemen kedua dari list `nilai` menjadi 100?", 'clue': "Akses elemen berdasarkan indeksnya.", 'options': ['`nilai.change(1, 100)`', '`nilai[1] = 100`', '`nilai.set(1, 100)`'], 'answerIndex': 1, 'explanation': "Anda dapat mengubah elemen list dengan menugaskan nilai baru ke indeks tertentu: `nama_list[indeks] = nilai_baru`." },
+                { id: 13, 'type': 'fill-in', 'text': "Metode `.pop()` pada list akan menghapus dan mengembalikan elemen paling...", 'clue': "Ini adalah operasi LIFO (Last-In, First-Out).", 'answer': "akhir", 'explanation': "Jika tanpa argumen, `.pop()` menghapus dan mengembalikan item terakhir dari list." },
+                { id: 14, 'type': 'multiple-choice', 'text': "Manakah cara membuat tuple dengan satu elemen?", 'clue': "Perlu ada koma di belakangnya.", 'options': ['`(42)`', '`[42]`', '`(42,)`', '`{42}`'], 'answerIndex': 2, 'explanation': "Untuk membuat tuple dengan satu elemen, Anda harus menyertakan koma di akhir, seperti `(42,)`, untuk membedakannya dari ekspresi matematika biasa." },
+                { id: 15, 'type': 'fill-in', 'text': "Lengkapi kode untuk memeriksa apakah `5` ada di dalam list `angka`: `if 5 __ angka:`", 'clue': "Gunakan operator keanggotaan.", 'answer': "in", 'explanation': "Operator `in` memeriksa apakah sebuah nilai ada di dalam sebuah sekuens (list, tuple, dll)." },
+                { id: 16, 'type': 'multiple-choice', 'text': "Apa perbedaan utama antara List dan Tuple?", 'clue': "Satu bisa diubah, satu lagi tidak.", 'options': ['List lebih cepat', 'Tuple bisa berisi tipe data campuran', 'List bisa diubah (mutable), Tuple tidak (immutable)'], 'answerIndex': 2, 'explanation': "Perbedaan fundamental adalah List bersifat mutable (bisa diubah) sedangkan Tuple bersifat immutable (tidak bisa diubah)." },
+                { id: 17, 'type': 'fill-in', 'text': "Jika `data = [9, 1, 5]`, `data.sort()` akan mengubah `data` menjadi...", 'clue': "Mengurutkan dari terkecil ke terbesar.", 'answer': "[1, 5, 9]", 'explanation': "Metode `.sort()` mengurutkan list secara langsung (in-place)." },
+                { id: 18, 'type': 'multiple-choice', 'text': "Bagaimana cara mengakses elemen terakhir dari sebuah tuple `t`?", 'clue': "Gunakan pengindeksan negatif.", 'options': ['`t[len(t)]`', '`t[-1]`', '`t[akhir]`'], 'answerIndex': 1, 'explanation': "Indeks `[-1]` adalah cara paling umum dan mudah untuk mendapatkan elemen terakhir." },
+                { id: 19, 'type': 'fill-in', 'text': "Metode `.index('b')` pada `['a', 'b', 'c']` akan menghasilkan...", 'clue': "Mencari posisi indeks dari sebuah nilai.", 'answer': "1", 'explanation': "Metode `.index()` mengembalikan indeks dari kemunculan pertama nilai yang dicari." },
+                { id: 20, 'type': 'multiple-choice', 'text': "Apa yang terjadi jika Anda mencoba mengubah elemen tuple?", 'clue': "Ingat sifat immutable-nya.", 'options': ['Elemen akan berubah', 'Akan terjadi `TypeError`', 'Tuple akan menjadi list'], 'answerIndex': 1, 'explanation': "Karena tuple bersifat immutable, mencoba menugaskan nilai baru ke salah satu elemennya akan menyebabkan `TypeError`." },
+                { id: 21, 'type': 'fill-in', 'text': "Lengkapi kode untuk membuat list berisi angka 1 sampai 5: `angka = list(range(1, __))`", 'clue': "Fungsi `range` berhenti sebelum angka terakhir.", 'answer': "6", 'explanation': "`range(1, 6)` akan menghasilkan angka dari 1 hingga 5." },
+                { id: 22, 'type': 'multiple-choice', 'text': "Fungsi `sorted(my_list)` berbeda dari `my_list.sort()` karena...", 'clue': "Satu mengubah list asli, satu lagi tidak.", 'options': ['`sorted()` lebih lambat', '`sorted()` mengembalikan list baru yang terurut', '`sorted()` hanya untuk tuple'], 'answerIndex': 1, 'explanation': "`my_list.sort()` mengurutkan list secara in-place (mengubah list asli), sedangkan `sorted(my_list)` mengembalikan salinan list yang baru dan sudah terurut." },
+                { id: 23, 'type': 'fill-in', 'text': "Jika `data = [1, [2, 3]]`, akses angka `3` dengan `data[1][__]`.", 'clue': "Ini adalah list bersarang (nested list).", 'answer': "1", 'explanation': "`data[1]` akan memberikan `[2, 3]`. Kemudian `[1]` dari list tersebut akan memberikan `3`." },
+                { id: 24, 'type': 'multiple-choice', 'text': "Bagaimana cara menghapus elemen pada indeks ke-2 dari list `item`?", 'clue': "Gunakan keyword `del` atau metode `.pop()`.", 'options': ['`item.remove(2)`', '`del item[2]`', '`item.delete(2)`'], 'answerIndex': 1, 'explanation': "Keyword `del` dapat digunakan untuk menghapus item dari list berdasarkan indeksnya: `del nama_list[indeks]`." },
+                { id: 25, 'type': 'fill-in', 'text': "Jika `a = [1, 2]`, `b = a`, lalu `b.append(3)`. Nilai `a` sekarang adalah...", 'clue': "`b` dan `a` menunjuk ke objek list yang sama.", 'answer': "[1, 2, 3]", 'explanation': "Ketika Anda menugaskan `b = a`, keduanya merujuk ke list yang sama di memori. Mengubah `b` juga akan mengubah `a`." },
+                { id: 26, 'type': 'multiple-choice', 'text': "Metode `.count(5)` pada list `[1, 5, 2, 5, 5]` akan menghasilkan...", 'clue': "Menghitung berapa kali suatu nilai muncul.", 'options': ['`1`', '`2`', '`3`'], 'answerIndex': 2, 'explanation': "Metode `.count()` menghitung jumlah kemunculan sebuah elemen dalam list." },
+                { id: 27, 'type': 'fill-in', 'text': "Lengkapi kode untuk membalik urutan list `data`: `data.____()`", 'clue': "Metode ini membalik urutan secara in-place.", 'answer': "reverse", 'explanation': "Metode `.reverse()` membalik urutan elemen dalam sebuah list." },
+                { id: 28, 'type': 'multiple-choice', 'text': "Apa itu 'tuple unpacking'?", 'clue': "Menugaskan elemen tuple ke beberapa variabel sekaligus.", 'options': ['Mengubah tuple menjadi list', 'Menugaskan elemen-elemen tuple ke variabel-variabel', 'Menghapus tuple'], 'answerIndex': 1, 'explanation': "Tuple unpacking adalah fitur di mana Anda bisa menugaskan nilai-nilai dalam sebuah tuple ke beberapa variabel dalam satu baris, contoh: `x, y = (10, 20)`." },
+                { id: 29, 'type': 'fill-in', 'text': "Jika `data = [0, 1, 2, 3, 4]`, `data[::2]` akan menghasilkan...", 'clue': "Sintaks slicing `[start:stop:step]`.", 'answer': "[0, 2, 4]", 'explanation': "Langkah (step) `2` berarti mengambil setiap elemen kedua dari list." },
+                { id: 30, 'type': 'multiple-choice', 'text': "Kapan sebaiknya menggunakan Tuple daripada List?", 'clue': "Pikirkan tentang data yang tidak seharusnya berubah.", 'options': ['Saat data perlu sering diubah', 'Saat data harus tetap konstan', 'Saat data berukuran sangat besar'], 'answerIndex': 1, 'explanation': "Gunakan Tuple untuk data yang tidak dimaksudkan untuk berubah setelah dibuat, seperti koordinat, konstanta, atau kunci dictionary." },
+                { id: 31, 'type': 'fill-in', 'text': "Lengkapi kode untuk membuat salinan (copy) dari list `asli`: `salinan = asli.____()`", 'clue': "Ini untuk menghindari masalah referensi yang sama.", 'answer': "copy", 'explanation': "Metode `.copy()` membuat salinan dangkal (shallow copy) dari sebuah list, sehingga perubahan pada salinan tidak mempengaruhi list asli." },
+                { id: 32, 'type': 'multiple-choice', 'text': "Apa output dari `[1, 2] * 3`?", 'clue': "Operator `*` pada list berarti repetisi.", 'options': ['`[3, 6]`', '`[1, 2, 1, 2, 1, 2]`', 'Error'], 'answerIndex': 1, 'explanation': "Mengalikan list dengan integer akan mengulang elemen-elemen list tersebut." },
+                { id: 33, 'type': 'fill-in', 'text': "Lengkapi kode untuk menghapus elemen terakhir dari list `angka` dan menyimpannya di `x`: `x = angka.____()`", 'clue': "Metode ini menghapus dan mengembalikan nilai.", 'answer': "pop", 'explanation': "Metode `.pop()` tanpa argumen akan menghapus dan mengembalikan elemen terakhir." },
+                { id: 34, type: 'multiple-choice', text: "Manakah yang akan menghasilkan `True`?", clue: "Bandingkan dua list yang nilainya sama.", options: ['`[1, 2] == (1, 2)`', '`[1, 2] is [1, 2]`', '`[1, 2] == [1, 2]`'], answerIndex: 2, explanation: "Operator `==` membandingkan nilai dari dua list. Karena kedua list memiliki elemen yang sama dalam urutan yang sama, hasilnya adalah `True`. Opsi `is` akan `False` karena mereka adalah dua objek yang berbeda di memori." },
+                { id: 35, 'type': 'fill-in', 'text': "Buat tuple kosong bernama `data_kosong`.", 'clue': "Gunakan kurung biasa.", 'answer': "data_kosong = ()", 'explanation': "Tuple kosong dapat dibuat dengan sepasang kurung biasa tanpa isi." }
+            ],
+            m_perulangan: [
+                { id: 1, type: 'multiple-choice', text: "Keyword apa yang digunakan untuk memulai perulangan `for`?", clue: "Terdiri dari 3 huruf.", options: ['loop', 'for', 'while', 'repeat'], answerIndex: 1, explanation: "Perulangan `for` dimulai dengan keyword `for`." },
+                { id: 2, type: 'fill-in', text: "Lengkapi kode untuk mencetak setiap `buah` dalam list `daftar_buah`:\n`for buah in ____:`\n  `print(buah)`", clue: "Sebutkan nama list yang ingin diiterasi.", answer: "daftar_buah", explanation: "Sintaks `for` adalah `for item in iterable:`." },
+                { id: 3, 'type': 'multiple-choice', 'text': "Perulangan `while` akan terus berjalan selama kondisinya...", 'clue': "Kebalikan dari `False`.", 'options': ['`True`', '`False`', '`None`', 'Berubah'], 'answerIndex': 0, 'explanation': "Blok kode di dalam `while` akan dieksekusi berulang kali selama kondisi yang diberikan bernilai `True`." },
+                { id: 4, 'type': 'fill-in', 'text': "Lengkapi `range()` untuk perulangan 5 kali (dari 0 sampai 4): `for i in range(__):`", 'clue': "Cukup masukkan jumlah iterasi yang diinginkan.", 'answer': "5", 'explanation': "`range(5)` akan menghasilkan urutan angka dari 0, 1, 2, 3, 4." },
+                { id: 5, 'type': 'multiple-choice', 'text': "Keyword apa untuk menghentikan perulangan secara paksa?", 'clue': "Mirip kata 'patah'.", 'options': ['`stop`', '`exit`', '`break`', '`continue`'], 'answerIndex': 2, 'explanation': "Keyword `break` digunakan untuk keluar dari perulangan `for` atau `while` saat itu juga." },
+                { id: 6, 'type': 'multiple-choice', 'text': "Apa fungsi keyword `continue` dalam perulangan?", 'clue': "Melewatkan sisa kode dan lanjut ke iterasi berikutnya.", 'options': ['Menghentikan perulangan', 'Melewati iterasi saat ini', 'Menyebabkan error', 'Memulai ulang perulangan'], 'answerIndex': 1, 'explanation': "`continue` akan menghentikan eksekusi iterasi saat ini dan langsung melompat ke awal iterasi berikutnya." },
+                { id: 7, 'type': 'fill-in', 'text': "Lengkapi perulangan `while` untuk mencetak angka 1 sampai 3:\n`i = 1`\n`while i <= 3:`\n  `print(i)`\n  `i = i + __`", 'clue': "Jangan lupa untuk mengubah variabel counter agar tidak terjadi infinite loop.", 'answer': "1", 'explanation': "Variabel counter (`i`) harus diinkrementasi di setiap akhir loop `while` agar kondisinya suatu saat menjadi `False`." },
+                { id: 8, 'type': 'multiple-choice', 'text': "Apa yang akan dicetak oleh kode ini?\n`for i in range(3):`\n  `print(i)`", 'clue': "`range(3)` menghasilkan 0, 1, 2.", 'options': ['`1\n2\n3`', '`0\n1\n2`', '`0\n1\n2\n3`', '`3`'], 'answerIndex': 1, 'explanation': "Fungsi `range(n)` menghasilkan angka dari 0 hingga `n-1`." },
+                { id: 9, 'type': 'fill-in', 'text': "Blok `else` pada perulangan `for` akan dieksekusi jika...", 'clue': "Hanya jika perulangan selesai secara normal.", 'answer': "perulangan selesai tanpa `break`", 'explanation': "Blok `else` pada loop hanya dieksekusi jika loop menyelesaikan semua iterasinya tanpa dihentikan oleh `break`." },
+                { id: 10, 'type': 'multiple-choice', 'text': "Bagaimana cara melakukan iterasi pada `key` dan `value` dari sebuah dictionary `d`?", 'clue': "Gunakan metode `.items()`.", 'options': ['`for k, v in d`', '`for k, v in d.items()`', '`for k, v in d.values()`'], 'answerIndex': 1, 'explanation': "Metode `.items()` pada dictionary mengembalikan pasangan (key, value) yang bisa di-unpack langsung di dalam `for` loop." },
+                { id: 11, 'type': 'fill-in', 'text': "Lengkapi kode untuk mencetak 'Apel' dan 'Jeruk':\n`for buah in ['Apel', 'Jeruk']: ____`", 'clue': "Gunakan fungsi `print` dengan variabel iterasi.", 'answer': "print(buah)", 'explanation': "Variabel `buah` akan berisi 'Apel' pada iterasi pertama dan 'Jeruk' pada iterasi kedua." },
+                { id: 12, 'type': 'multiple-choice', 'text': "Apa itu 'infinite loop' (perulangan tak terbatas)?", 'clue': "Kondisi `while` yang tidak pernah menjadi `False`.", 'options': ['Perulangan yang sangat panjang', 'Perulangan yang tidak pernah berhenti', 'Perulangan yang error'], 'answerIndex': 1, 'explanation': "Infinite loop terjadi ketika kondisi perulangan (biasanya pada `while`) tidak pernah terpenuhi untuk berhenti, menyebabkan program macet." },
+                { id: 13, 'type': 'fill-in', 'text': "Lengkapi `range` untuk mendapatkan urutan: 5, 10, 15. `for i in range(5, 16, __):`", 'clue': "Argumen ketiga pada `range` adalah langkah (step).", 'answer': "5", 'explanation': "`range(start, stop, step)` digunakan untuk menghasilkan urutan dengan lompatan tertentu." },
+                { id: 14, 'type': 'multiple-choice', 'text': "Apa output dari kode ini?\n`for _ in range(3):`\n  `print('Halo')`", 'clue': "Underscore `_` adalah variabel, tapi menandakan 'tidak peduli'.", 'options': ['Error', '`Halo` (3 kali)', '`_` (3 kali)'], 'answerIndex': 1, 'explanation': "Kode ini akan mencetak 'Halo' sebanyak 3 kali. Menggunakan `_` sebagai nama variabel adalah konvensi untuk menandakan bahwa kita tidak akan menggunakan nilai dari iterasi tersebut." },
+                { id: 15, 'type': 'fill-in', 'text': "Lengkapi kode untuk keluar dari loop jika `x` adalah 0:\n`if x == 0: ____`", 'clue': "Gunakan keyword untuk menghentikan loop.", 'answer': "break", 'explanation': "`break` akan menghentikan loop `for` atau `while` terdekat." },
+                { id: 16, 'type': 'multiple-choice', 'text': "Fungsi `enumerate()` pada perulangan digunakan untuk...", 'clue': "Mendapatkan nomor urut dan item sekaligus.", 'options': ['Menghitung jumlah item', 'Mendapatkan indeks dan item', 'Mengurutkan item'], 'answerIndex': 1, 'explanation': "`enumerate()` sangat berguna untuk mendapatkan pasangan (indeks, nilai) saat melakukan iterasi pada sebuah sekuens." },
+                { id: 17, 'type': 'fill-in', 'text': "Lengkapi kode untuk melewati angka genap:\n`if num % 2 == 0: ____`", 'clue': "Gunakan keyword untuk lanjut ke iterasi berikutnya.", 'answer': "continue", 'explanation': "`continue` akan melewatkan sisa blok kode untuk iterasi saat ini dan melanjutkan ke iterasi berikutnya." },
+                { id: 18, 'type': 'multiple-choice', 'text': "Apa yang akan dicetak?\n`i = 5`\n`while i > 0:`\n  `print(i)`\n  `i -= 2`", 'clue': "Lacak nilai `i` di setiap iterasi.", 'options': ['`5\n3\n1`', '`5\n4\n3\n2\n1`', '`5\n3`'], 'answerIndex': 0, 'explanation': "Loop akan mencetak 5, lalu `i` menjadi 3. Mencetak 3, lalu `i` menjadi 1. Mencetak 1, lalu `i` menjadi -1, dan loop berhenti." },
+                { id: 19, 'type': 'fill-in', 'text': "Lengkapi loop untuk iterasi mundur dari 3 ke 1: `for i in range(3, 0, __):`", 'clue': "Gunakan langkah (step) negatif.", 'answer': "-1", 'explanation': "Langkah -1 pada `range` digunakan untuk iterasi secara mundur." },
+                { id: 20, 'type': 'multiple-choice', 'text': "Apa itu 'nested loop' (perulangan bersarang)?", 'clue': "Satu loop di dalam loop lain.", 'options': ['Dua loop yang terpisah', 'Satu loop di dalam loop lain', 'Loop yang sangat panjang'], 'answerIndex': 1, 'explanation': "Nested loop adalah struktur di mana satu perulangan (loop dalam) dijalankan sepenuhnya untuk setiap iterasi dari perulangan lainnya (loop luar)." },
+                { id: 21, 'type': 'fill-in', 'text': "Lengkapi kode untuk iterasi pada string 'abc': `for char in '___':`", 'clue': "String adalah iterable, sama seperti list.", 'answer': "abc", 'explanation': "Anda bisa melakukan iterasi langsung pada sebuah string untuk mendapatkan setiap karakternya." },
+                { id: 22, 'type': 'multiple-choice', 'text': "Kapan blok `else` pada `while` loop dieksekusi?", 'clue': "Sama seperti pada `for` loop.", 'options': ['Setiap kali loop berjalan', 'Hanya jika loop dihentikan oleh `break`', 'Hanya jika kondisi loop menjadi `False`'], 'answerIndex': 2, 'explanation': "Blok `else` pada `while` loop dieksekusi ketika kondisi `while` menjadi `False` (yaitu, loop berakhir secara normal)." },
+                { id: 23, 'type': 'fill-in', 'text': "Lengkapi kode `while ____: print('Hello')` untuk membuat infinite loop.", 'clue': "Gunakan nilai boolean yang selalu benar.", 'answer': "True", 'explanation': "`while True:` adalah cara paling umum untuk membuat perulangan tak terbatas secara sengaja." },
+                { id: 24, 'type': 'multiple-choice', 'text': "Apa output dari kode ini?\n`for i, letter in enumerate('ab'):`\n  `print(i, letter)`", 'clue': "`enumerate` menghasilkan indeks dan nilai.", 'options': ['`0 a\n1 b`', '`1 a\n2 b`', '`a 0\nb 1`'], 'answerIndex': 0, 'explanation': "Iterasi pertama: `i=0`, `letter='a'`. Iterasi kedua: `i=1`, `letter='b'`." },
+                { id: 25, 'type': 'fill-in', 'text': "Lengkapi kode untuk mencetak 'Selesai' setelah loop selesai: `for i in range(3): print(i)`\n`____:`\n  `print('Selesai')`", 'clue': "Gunakan blok yang dieksekusi setelah loop normal.", 'answer': "else", 'explanation': "Blok `else` setelah `for` akan berjalan jika loop menyelesaikan semua iterasinya." },
+                { id: 26, 'type': 'multiple-choice', 'text': "Manakah cara yang paling 'Pythonic' untuk loop sebanyak 5 kali?", 'clue': "Gunakan `range` dan `for`.", 'options': ['`i=0; while i<5: i+=1`', '`for i in [0,1,2,3,4]: ...`', '`for i in range(5): ...`'], 'answerIndex': 2, 'explanation': "Menggunakan `for i in range(5):` adalah cara yang paling ringkas, mudah dibaca, dan efisien untuk melakukan iterasi dengan jumlah tertentu." },
+                { id: 27, 'type': 'fill-in', 'text': "Lengkapi kode untuk menggabungkan dua list `a` dan `b` dengan `zip`: `for x, y in ____(a, b):`", 'clue': "Gunakan fungsi yang namanya `zip`.", 'answer': "zip", 'explanation': "Fungsi `zip()` menggabungkan beberapa iterable dan menghasilkan pasangan elemen secara berurutan." },
+                { id: 28, 'type': 'multiple-choice', 'text': "Apa yang terjadi jika `break` dieksekusi di dalam nested loop?", 'clue': "Hanya loop terdekat yang berhenti.", 'options': ['Semua loop berhenti', 'Hanya loop terdalam yang berhenti', 'Program error'], 'answerIndex': 1, 'explanation': "`break` hanya akan menghentikan eksekusi dari loop tempat ia berada (loop terdalam)." },
+                { id: 29, 'type': 'fill-in', 'text': "Lengkapi kode `while len(data) > 0: item = data.pop(); print(item)` agar tidak error jika `data` kosong.", 'clue': "Kondisi `while` sudah menanganinya.", 'answer': "len(data) > 0", 'explanation': "Kondisi `while len(data) > 0:` memastikan bahwa `.pop()` hanya akan dipanggil jika list tidak kosong, sehingga mencegah `IndexError`." },
+                { id: 30, 'type': 'multiple-choice', 'text': "Perulangan `for` di Python paling tepat dideskripsikan sebagai...", 'clue': "Ini adalah loop 'for-each'.", 'options': ['Loop berbasis counter', 'Loop berbasis kondisi', "Loop 'for-each' (iterasi atas koleksi)"], 'answerIndex': 2, 'explanation': "Tidak seperti di beberapa bahasa lain, `for` di Python adalah loop 'for-each' yang secara langsung melakukan iterasi pada item dari sebuah koleksi (list, string, dll), bukan berdasarkan counter." },
+                { id: 31, 'type': 'fill-in', 'text': "Lengkapi kode untuk mencetak indeks dari setiap item: `for idx, val in ____(my_list):`", 'clue': "Gunakan fungsi untuk mendapatkan indeks dan nilai.", 'answer': "enumerate", 'explanation': "`enumerate()` adalah cara Pythonic untuk mengakses indeks saat iterasi." },
+                { id: 32, 'type': 'multiple-choice', 'text': "Apa output dari `for i in range(2, 5): print(i)`?", 'clue': "`range(start, stop)`.", 'options': ['`2\n3\n4\n5`', '`2\n3\n4`', '`3\n4\n5`'], 'answerIndex': 1, 'explanation': "`range(2, 5)` menghasilkan angka dari 2 hingga sebelum 5, yaitu 2, 3, dan 4." },
+                { id: 33, 'type': 'fill-in', 'text': "Tulis perulangan satu baris (list comprehension) untuk membuat list kuadrat dari `[1, 2, 3]`.", 'clue': "Format: `[ekspresi for item in list]`.", 'answer': "[x*x for x in [1, 2, 3]]", 'explanation': "List comprehension adalah cara ringkas untuk membuat list berdasarkan iterable yang ada." },
+                { id: 34, 'type': 'multiple-choice', 'text': "Manakah yang akan menyebabkan infinite loop?", 'clue': "Cari kondisi `while` yang tidak pernah salah.", 'options': ['`i=5; while i>0: i-=1`', '`while True: break`', '`i=1; while i>0: i+=1`'], 'answerIndex': 2, 'explanation': "Pada opsi ketiga, `i` akan selalu lebih besar dari 0 karena terus bertambah, sehingga loop tidak akan pernah berhenti." },
+                { id: 35, 'type': 'fill-in', 'text': "Lengkapi kode untuk mencetak 'Found!' dan berhenti jika `n == 5`:\n`if n == 5:`\n  `print('Found!')`\n  `____`", 'clue': "Gunakan keyword untuk keluar dari loop.", 'answer': "break", 'explanation': "Setelah item ditemukan, `break` digunakan untuk menghentikan pencarian lebih lanjut." }
+            ],
+            m_struktur_data_2: [
+                { id: 1, type: 'multiple-choice', text: "Struktur data apa yang menggunakan format `key: value`?", clue: "Ditandai dengan kurung kurawal `{}`.", options: ['List', 'Tuple', 'Set', 'Dictionary'], answerIndex: 3, explanation: "Dictionary menyimpan data dalam pasangan kunci-nilai (key-value pairs)." },
+                { id: 2, type: 'fill-in', text: "Lengkapi kode untuk membuat dictionary kosong: `data = __`", clue: "Gunakan kurung kurawal.", answer: "{}", explanation: "Dictionary kosong dapat dibuat dengan `{}` atau dengan `dict()`." },
+                { id: 3, 'type': 'multiple-choice', 'text': "Bagaimana cara mengakses nilai yang berpasangan dengan kunci `'nama'` dalam dictionary `siswa`?", 'clue': "Gunakan kurung siku dengan kunci di dalamnya.", 'options': ["`siswa('nama')`", "`siswa['nama']`", "`siswa.get_nama()`", "`siswa.nama`"], 'answerIndex': 1, 'explanation': "Nilai diakses menggunakan kuncinya di dalam kurung siku: `nama_dict['kunci']`." },
+                { id: 4, 'type': 'fill-in', 'text': "Struktur data yang berisi kumpulan item unik dan tidak terurut adalah...", 'clue': "Mirip himpunan dalam matematika.", 'answer': "set", 'explanation': "Set adalah koleksi item yang tidak terurut, tidak dapat diubah, dan tidak mengizinkan nilai duplikat." },
+                { id: 5, 'type': 'multiple-choice', 'text': "Bagaimana cara menambahkan pasangan `key: value` baru `'kota': 'Jakarta'` ke dictionary `data`?", 'clue': "Sama seperti mengubah nilai yang sudah ada.", 'options': ["`data.append('kota', 'Jakarta')`", "`data['kota'] = 'Jakarta'`", "`data.add('kota': 'Jakarta')`"], 'answerIndex': 1, 'explanation': "Anda dapat menambahkan atau memperbarui item dictionary dengan `nama_dict['kunci_baru'] = nilai_baru`." },
+                { id: 6, 'type': 'multiple-choice', 'text': "Apa yang terjadi jika Anda menambahkan elemen yang sudah ada ke dalam sebuah `set`?", 'clue': "Set hanya menyimpan nilai unik.", 'options': ['Akan terjadi error', 'Elemen lama akan diganti', 'Tidak ada yang terjadi', 'Set akan menjadi list'], 'answerIndex': 2, 'explanation': "Karena set hanya menyimpan nilai unik, mencoba menambahkan elemen yang sudah ada tidak akan mengubah set tersebut." },
+                { id: 7, 'type': 'fill-in', 'text': "Lengkapi kode untuk mendapatkan semua kunci dari dictionary `d` sebagai list: `kunci = list(d.____())`", 'clue': "Gunakan metode `.keys()`.", 'answer': "keys", 'explanation': "Metode `.keys()` mengembalikan objek view yang berisi semua kunci dari dictionary." },
+                { id: 8, 'type': 'multiple-choice', 'text': "Metode `.get('kunci', 'default')` pada dictionary berguna untuk...", 'clue': "Menghindari error jika kunci tidak ada.", 'options': ['Menghapus kunci', 'Mendapatkan nilai tanpa menyebabkan error', 'Mengupdate nilai'], 'answerIndex': 1, 'explanation': "Metode `.get()` mengembalikan nilai untuk kunci yang diberikan. Jika kunci tidak ditemukan, ia mengembalikan nilai default (atau `None`) alih-alih menyebabkan `KeyError`." },
+                { id: 9, 'type': 'fill-in', 'text': "Lengkapi kode untuk membuat set dari list `[1, 2, 2, 3]`: `angka_unik = ____([1, 2, 2, 3])`", 'clue': "Gunakan fungsi konstruktor untuk set.", 'answer': "set", 'explanation': "Fungsi `set()` dapat digunakan untuk mengonversi iterable lain (seperti list) menjadi set, yang secara otomatis akan menghapus duplikat." },
+                { id: 10, 'type': 'multiple-choice', 'text': "Operator `|` pada dua set digunakan untuk operasi...", 'clue': "Gabungan dari semua elemen di kedua set.", 'options': ['Irisan (Intersection)', 'Gabungan (Union)', 'Selisih (Difference)'], 'answerIndex': 1, 'explanation': "Operator `|` atau metode `.union()` mengembalikan set baru yang berisi semua elemen dari kedua set." },
+                { id: 11, 'type': 'fill-in', 'text': "Lengkapi kode untuk menghapus kunci `'umur'` dari dictionary `data`: `____ data['umur']`", 'clue': "Gunakan keyword `del`.", 'answer': "del", 'explanation': "Keyword `del` digunakan untuk menghapus pasangan kunci-nilai dari dictionary." },
+                { id: 12, 'type': 'multiple-choice', 'text': "Manakah tipe data yang TIDAK BISA menjadi kunci dictionary?", 'clue': "Kunci harus bersifat 'immutable' (tidak bisa diubah).", 'options': ['String', 'Integer', 'Tuple', 'List'], 'answerIndex': 3, 'explanation': "List bersifat mutable (bisa diubah), sehingga tidak bisa digunakan sebagai kunci dictionary. Kunci harus hashable." },
+                { id: 13, 'type': 'fill-in', 'text': "Jika `s1 = {1, 2, 3}` dan `s2 = {3, 4, 5}`, `s1.intersection(s2)` akan menghasilkan...", 'clue': "Elemen yang ada di kedua set.", 'answer': "{3}", 'explanation': "Operasi irisan (intersection) menghasilkan elemen yang sama-sama ada di kedua set." },
+                { id: 14, 'type': 'multiple-choice', 'text': "Bagaimana cara memeriksa apakah kunci `'alamat'` ada di dalam dictionary `kontak`?", 'clue': "Gunakan operator `in`.", 'options': ["`'alamat' in kontak`", "`kontak.has_key('alamat')`", "`kontak.exists('alamat')`"], 'answerIndex': 0, 'explanation': "Cara paling Pythonic untuk memeriksa keberadaan kunci adalah dengan menggunakan operator `in`: `'kunci' in nama_dict`." },
+                { id: 15, 'type': 'fill-in', 'text': "Lengkapi kode untuk menambahkan 'mangga' ke set `buah`: `buah.____('mangga')`", 'clue': "Gunakan metode `.add()`.", 'answer': "add", 'explanation': "Metode `.add()` digunakan untuk menambahkan satu elemen ke dalam set." },
+                { id: 16, 'type': 'multiple-choice', 'text': "Metode `.popitem()` pada dictionary (di Python 3.7+) akan...", 'clue': "Menghapus item yang terakhir ditambahkan.", 'options': ['Menghapus item acak', 'Menghapus item pertama', 'Menghapus dan mengembalikan item terakhir (LIFO)'], 'answerIndex': 2, 'explanation': "Sejak Python 3.7, dictionary mempertahankan urutan penyisipan, dan `.popitem()` menghapus item yang terakhir ditambahkan." },
+                { id: 17, 'type': 'fill-in', 'text': "Jika `s1 = {1, 2, 3}` dan `s2 = {2, 3}`, `s2.issubset(s1)` akan menghasilkan...", 'clue': "Apakah semua elemen `s2` ada di `s1`?", 'answer': "True", 'explanation': "`.issubset()` memeriksa apakah sebuah set adalah himpunan bagian dari set lain." },
+                { id: 18, 'type': 'multiple-choice', 'text': "Apa output dari `{'a': 1, 'b': 2}.values()`?", 'clue': "Ini mengembalikan semua nilai, bukan kunci.", 'options': ["`dict_values(['a', 'b'])`", "`dict_values([1, 2])`", "`[1, 2]`"], 'answerIndex': 1, 'explanation': "Metode `.values()` mengembalikan objek view yang berisi semua nilai dari dictionary." },
+                { id: 19, 'type': 'fill-in', 'text': "Lengkapi kode untuk menghapus 'apel' dari set `buah` tanpa error jika tidak ada: `buah.____('apel')`", 'clue': "Gunakan metode `.discard()`.", 'answer': "discard", 'explanation': "`.discard()` sama seperti `.remove()`, tetapi tidak akan menimbulkan error jika elemen yang akan dihapus tidak ada di dalam set." },
+                { id: 20, 'type': 'multiple-choice', 'text': "Manakah cara membuat set kosong yang benar?", 'clue': "`{}` akan membuat dictionary kosong.", 'options': ['`{}`', '`set()`', '`[]`'], 'answerIndex': 1, 'explanation': "Untuk membuat set kosong, Anda harus menggunakan `set()`, karena `{}` akan membuat dictionary kosong." },
+                { id: 21, 'type': 'fill-in', 'text': "Jika `d = {'x': 1}`, `d.get('y', 0)` akan menghasilkan...", 'clue': "Kunci 'y' tidak ada, jadi nilai default dikembalikan.", 'answer': "0", 'explanation': "`.get()` sangat berguna untuk menyediakan nilai default ketika sebuah kunci mungkin tidak ada." },
+                { id: 22, 'type': 'multiple-choice', 'text': "Operasi `s1 - s2` pada set adalah...", 'clue': "Elemen di `s1` yang tidak ada di `s2`.", 'options': ['Union', 'Intersection', 'Difference'], 'answerIndex': 2, 'explanation': "Operator `-` atau metode `.difference()` mengembalikan elemen yang ada di set pertama tetapi tidak di set kedua." },
+                { id: 23, 'type': 'fill-in', 'text': "Lengkapi 'dictionary comprehension' untuk membuat `{'a': 1, 'b': 2}`: `{k: v for k, v in ____}`", 'clue': "Gunakan iterable pasangan key-value.", 'answer': "[('a', 1), ('b', 2)]", 'explanation': "Dictionary comprehension adalah cara ringkas untuk membuat dictionary dari iterable lain." },
+                { id: 24, 'type': 'multiple-choice', 'text': "Metode `update()` pada dictionary digunakan untuk...", 'clue': "Menggabungkan dictionary dengan dictionary lain.", 'options': ['Mengganti semua item', 'Menambahkan/memperbarui beberapa item sekaligus', 'Menghapus semua item'], 'answerIndex': 1, 'explanation': "`.update()` mengambil dictionary atau iterable lain dari pasangan kunci-nilai dan menambahkannya ke dictionary yang ada." },
+                { id: 25, 'type': 'fill-in', 'text': "Jika `s = {1, 2, 3}`, `s.pop()` akan menghapus dan mengembalikan...", 'clue': "Set tidak terurut, jadi item yang dihapus acak.", 'answer': "elemen acak", 'explanation': "Karena set tidak memiliki urutan, `.pop()` akan menghapus dan mengembalikan elemen secara acak." },
+                { id: 26, 'type': 'multiple-choice', 'text': "Apa keuntungan utama menggunakan Set?", 'clue': "Pikirkan tentang keunikan dan kecepatan pencarian.", 'options': ['Menjaga urutan', 'Pemeriksaan keanggotaan (`in`) yang sangat cepat', 'Bisa menyimpan nilai duplikat'], 'answerIndex': 1, 'explanation': "Set diimplementasikan menggunakan hash table, sehingga memeriksa apakah sebuah elemen ada di dalam set (`item in my_set`) jauh lebih cepat daripada di list, terutama untuk data besar." },
+                { id: 27, 'type': 'fill-in', 'text': "Lengkapi kode untuk mendapatkan nilai dari kunci 'a', atau setel ke 1 jika tidak ada: `data.____('a', 1)`", 'clue': "Metode ini mendapatkan nilai dan juga bisa mengatur nilai default.", 'answer': "setdefault", 'explanation': "`.setdefault('kunci', nilai)` akan mengembalikan nilai kunci jika ada. Jika tidak, ia akan menyisipkan kunci dengan nilai default yang diberikan dan mengembalikannya." },
+                { id: 28, 'type': 'multiple-choice', 'text': "Operasi `s1 ^ s2` (symmetric difference) pada set akan menghasilkan...", 'clue': "Elemen yang ada di salah satu set, tapi tidak di keduanya.", 'options': ['Elemen yang sama di kedua set', 'Semua elemen dari kedua set', 'Elemen yang unik untuk masing-masing set'], 'answerIndex': 2, 'explanation': "Selisih simetris mengembalikan set yang berisi elemen yang ada di `s1` atau `s2`, tetapi tidak di keduanya." },
+                { id: 29, 'type': 'fill-in', 'text': "Lengkapi kode untuk mengosongkan semua item dari dictionary `d`: `d.____()`", 'clue': "Gunakan metode `.clear()`.", 'answer': "clear", 'explanation': "Metode `.clear()` menghapus semua item dari dictionary atau set." },
+                { id: 30, 'type': 'multiple-choice', 'text': "Manakah yang benar tentang kunci Dictionary?", 'clue': "Kunci harus unik.", 'options': ['Boleh duplikat', 'Harus unik', 'Harus berupa string'], 'answerIndex': 1, 'explanation': "Setiap kunci dalam sebuah dictionary harus unik. Jika Anda menetapkan nilai ke kunci yang sudah ada, nilai lama akan ditimpa." },
+                { id: 31, 'type': 'fill-in', 'text': "Jika `s = frozenset([1, 2])`, `s` adalah...", 'clue': "Versi `immutable` dari set.", 'answer': "immutable set", 'explanation': "`frozenset` adalah versi `immutable` dari `set`. Karena tidak bisa diubah, ia bisa digunakan sebagai kunci dictionary." },
+                { id: 32, 'type': 'multiple-choice', 'text': "Apa output dari `list({'a': 1, 'b': 2})`?", 'clue': "Secara default, iterasi pada dictionary menghasilkan kunci.", 'options': ["`[1, 2]`", "`['a', 'b']`", "`[('a', 1), ('b', 2)]`"], 'answerIndex': 1, 'explanation': "Ketika Anda mengonversi dictionary ke list, Anda akan mendapatkan list yang berisi kunci-kuncinya." },
+                { id: 33, 'type': 'fill-in', 'text': "Lengkapi kode untuk membuat dictionary dari dua list: `d = dict(____(keys, values))`", 'clue': "Gunakan fungsi untuk memasangkan elemen dari dua list.", 'answer': "zip", 'explanation': "`zip()` membuat pasangan, dan `dict()` dapat mengubah pasangan-pasangan tersebut menjadi dictionary." },
+                { id: 34, 'type': 'multiple-choice', 'text': "Metode `.items()` pada dictionary mengembalikan...", 'clue': "Pasangan kunci dan nilai.", 'options': ['List dari kunci', 'List dari nilai', 'Objek view dari pasangan (kunci, nilai)'], 'answerIndex': 2, 'explanation': "`.items()` mengembalikan objek view yang berisi tuple `(kunci, nilai)` untuk setiap item dalam dictionary." },
+                { id: 35, 'type': 'fill-in', 'text': "Jika `s1 = {1, 2}` dan `s2 = {3, 4}`, `s1.isdisjoint(s2)` akan menghasilkan...", 'clue': "Apakah kedua set tidak memiliki elemen yang sama?", 'answer': "True", 'explanation': "`.isdisjoint()` menghasilkan `True` jika kedua set tidak memiliki elemen yang sama (irisannya kosong)." }
+            ],
+            d_fungsi: [
+                { id: 1, type: 'multiple-choice', text: "Apa keyword untuk mendefinisikan fungsi di Python?", clue: "Sama untuk semua versi modern Python.", options: ['func', 'def', 'function', 'fn'], answerIndex: 1, explanation: "Keyword `def` digunakan untuk mendefinisikan fungsi." },
+                { id: 2, type: 'fill-in', text: "Lengkapi: def tambah(a, b):\n    return a ___ b", clue: "Operator yang menjumlahkan dua nilai.", answer: "+", explanation: "Fungsi harus mengembalikan hasil penjumlahan menggunakan operator `+`." },
+                { id: 3, type: 'multiple-choice', text: "Apa yang dikembalikan fungsi tanpa `return`?", clue: "Nilai khusus di Python.", options: ['0', 'None', '""', 'False'], answerIndex: 1, explanation: "Jika tidak ada `return`, fungsi akan mengembalikan `None`." },
+                { id: 4, type: 'fill-in', text: "Bagaimana memanggil fungsi `halo` tanpa argumen?", clue: "Tambahkan tanda setelah nama fungsi.", answer: "halo()", explanation: "Pemanggilan fungsi harus menyertakan tanda kurung: `halo()`." },
+                { id: 5, type: 'multiple-choice', text: "Parameter mana yang menunjuk pada argumen yang dikirim sebagai kata kunci?", clue: "Argumen dikirim seperti nama=nilai.", options: ['Positional', 'Keyword', 'Variadic', 'Default'], answerIndex: 1, explanation: "Argumen yang dikirim dengan format `nama=nilai` disebut keyword arguments." },
+                { id: 6, type: 'fill-in', text: "Lengkapi deklarasi fungsi dengan default parameter: def sapa(nama='Anonim'):\n    print('Halo, ' + ___)", clue: "Nama parameter yang digunakan di dalam fungsi.", answer: "nama", explanation: "Default parameter `nama` digunakan jika tidak ada argumen yang diberikan." },
+                { id: 7, type: 'multiple-choice', text: "Apa output dari: def f(x):\n    x += 1\n    return x\nprint(f(4))", clue: "Operasi aritmatika sederhana.", options: ['4', '5', 'None', 'Error'], answerIndex: 1, explanation: "Fungsi menambahkan 1 pada `x` dan mengembalikannya -> 5." },
+                { id: 8, type: 'fill-in', text: "Bagaimana menuliskan fungsi yang menerima jumlah argumen tak tentu? def gabung(___):", clue: "Gunakan tanda bintang tunggal untuk tuple argumen.", answer: "*args", explanation: "`*args` menangkap argumen positional dalam bentuk tuple." },
+                { id: 9, type: 'multiple-choice', text: "Apa tujuan `**kwargs` pada definisi fungsi?", clue: "Bertanggung jawab untuk keyword arguments yang fleksibel.", options: ['Menangkap positional args', 'Menangkap keyword args sebagai dict', 'Membuat fungsi asynchronous'], answerIndex: 1, explanation: "`**kwargs` menangkap keyword arguments sebagai dictionary." },
+                { id: 10, type: 'fill-in', text: "Lengkapi anotasi tipe sederhana: def tambah(a: int, b: int) -> ___:", clue: "Tipe hasil penjumlahan dua bilangan bulat.", answer: "int", explanation: "Anotasi mengindikasikan fungsi mengembalikan `int`." },
+                { id: 11, type: 'multiple-choice', text: "Bagaimana membuat fungsi nested (fungsi di dalam fungsi)?", clue: "Boleh menuliskannya secara langsung di dalamnya.", options: ['Tidak mungkin', 'Dengan mendefinisikan def di dalam def lain', 'Hanya dengan lambda'], answerIndex: 1, explanation: "Anda dapat mendefinisikan fungsi di dalam fungsi lain menggunakan `def`." },
+                { id: 12, type: 'fill-in', text: "Apa nama untuk fungsi anonim singkat di Python?", clue: "Satu kata, sering dipakai untuk ekspresi kecil.", answer: "lambda", explanation: "`lambda` digunakan untuk membuat fungsi anonim (singkat)." },
+                { id: 13, type: 'multiple-choice', text: "Apa output dari: def f(a):\n    a.append(1)\nL = []\nf(L)\nprint(L)", clue: "Mutability of list matters.", options: ['[]', '[1]', 'Error'], answerIndex: 1, explanation: "List yang dimodifikasi dalam fungsi juga berubah di luar fungsi karena bersifat mutable." },
+                { id: 14, type: 'fill-in', text: "Cara terbaik untuk menghentikan fungsi lebih awal adalah menggunakan kata kunci ___", clue: "Return mengembalikan nilai dan keluar dari fungsi.", answer: "return", explanation: "`return` mengakhiri eksekusi fungsi dan (opsional) mengembalikan nilai." },
+                { id: 15, type: 'multiple-choice', text: "Apa perbedaan antara `return` dan `print` di dalam fungsi?", clue: "Satu mengeluarkan nilai ke caller, satu mencetak ke console.", options: ['Tidak ada', 'return memberikan nilai, print hanya output', 'print menghentikan fungsi'], answerIndex: 1, explanation: "`return` mengembalikan nilai ke pemanggil; `print` hanya mencetak ke stdout." },
+                { id: 16, type: 'fill-in', text: "Isi placeholder: def buat_counter():\n    count = 0\n    def inc():\n        nonlocal ___\n        count += 1\n        return count", clue: "Kata kunci untuk mengakses variabel enclose scope.", answer: "count", explanation: "`nonlocal` digunakan untuk menandai penugasan pada variabel luar, bukan global." },
+                { id: 17, type: 'multiple-choice', text: "Apa yang dimaksud dengan 'pure function'?", clue: "Tidak bergantung pada state eksternal.", options: ['Tidak memiliki side effect', 'Selalu printing', 'Tidak menerima argumen'], answerIndex: 0, explanation: "Fungsi murni tidak memiliki side effect dan hasilnya hanya bergantung pada inputnya." },
+                { id: 18, type: 'fill-in', text: "Bagaimana menandai fungsi sebagai asynchronous? def proses(): ___", clue: "Satu kata di awal definisi.", answer: "async", explanation: "Fungsi async dideklarasikan dengan `async def`." },
+                { id: 19, type: 'multiple-choice', text: "Bagaimana menangani exception di dalam fungsi?", clue: "Gunakan blok try/except di dalam fungsi.", options: ['Dengan if', 'Dengan try/except', 'Dengan lambda'], answerIndex: 1, explanation: "Penanganan exception dilakukan menggunakan `try`/`except`." },
+                { id: 20, type: 'fill-in', text: "Lengkapi: def hitung(a, b=2):\n    return a * ___", clue: "Parameter default digunakan jika b tidak diberikan.", answer: "b", explanation: "Parameter default `b=2` digunakan saat pemanggilan tanpa argumen kedua." },
+                { id: 21, type: 'multiple-choice', text: "Apakah fungsi dapat dikembalikan dari fungsi lain?", clue: "Higher-order functions.", options: ['Ya', 'Tidak'], answerIndex: 0, explanation: "Di Python, fungsi adalah objek dan dapat dikembalikan dari fungsi lain." },
+                { id: 22, type: 'fill-in', text: "Tulis sintaks untuk mendokumentasikan fungsi dengan docstring (baris pertama): def f():\n    ___\n    pass", clue: "Gunakan triple quotes.", answer: '"""Deskripsi singkat"""', explanation: "Docstring biasanya ditulis dengan tiga tanda kutip di baris pertama fungsi." },
+                { id: 23, type: 'multiple-choice', text: "Apa output dari: def f(x=[]):\n    x.append(1)\n    return x\nprint(f()); print(f())", clue: "Default mutable argument behavior.", options: ['[1]\n[1]', '[1]\n[1,1]', 'Error'], answerIndex: 1, explanation: "Default mutable argument dipertahankan antar pemanggilan, sehingga hasilnya bertambah." },
+                { id: 24, type: 'fill-in', text: "Harga kelipatan: def diskon(harga):\n    return harga * 0.__", clue: "Untuk diskon 10% gunakan 0.1", answer: "1", explanation: "0.1 merepresentasikan 10% (0.1)." },
+                { id: 25, type: 'multiple-choice', text: "Apa yang terjadi jika fungsi menerima tipe data yang salah?", clue: "Tergantung implementasi fungsi.", options: ['TypeError', 'Selalu sukses', 'print error saja'], answerIndex: 0, explanation: "Jika operasi tidak kompatibel, Python akan menghasilkan `TypeError`." },
+                { id: 26, type: 'fill-in', text: "Lengkapi: from functools import lru_cache\n@lru_cache(maxsize=None)\ndef fib(n):\n    if n < 2: return n\n    return fib(n-1) + fib(n-2)\nApa fungsi dekorator di atas?", clue: "Caching hasil pemanggilan fungsi.", answer: "meng-cache hasil", explanation: "`lru_cache` menyimpan hasil pemanggilan fungsi untuk menghindari perhitungan ulang." },
+                { id: 27, type: 'multiple-choice', text: "Apa itu 'decorator' pada fungsi?", clue: "Sintaks menggunakan @", options: ['Cara memanggil fungsi', 'Fungsi yang mengubah fungsi lain', 'Tipe data baru'], answerIndex: 1, explanation: "Decorator adalah fungsi yang mengambil dan mengembalikan fungsi lain, sering digunakan untuk menambahkan perilaku." },
+                { id: 28, type: 'fill-in', text: "Bagaimana memberi nama parameter yang hanya menerima keyword-only (Python 3)? def f(a, *, b):\n    ___", clue: "Parameter `b` hanya bisa lewat keyword.", answer: "pass", explanation: "`*` memisahkan positional dan keyword-only parameters; implementasinya fleksibel." },
+                { id: 29, type: 'multiple-choice', text: "Mana praktik yang baik saat menulis fungsi?", clue: "Fokus pada readability dan single responsibility.", options: ['Buat fungsi panjang sekali', 'Fungsi melakukan satu tugas jelas', 'Hindari comments'], answerIndex: 1, explanation: "Fungsi yang melakukan satu tugas memudahkan testing dan maintenance." },
+                { id: 30, type: 'fill-in', text: "Tulis contoh pemanggilan fungsi dengan keyword args: panggil(nama='Andi', usia=20)", clue: "Gunakan kata kunci dan nilai.", answer: "panggil(nama='Andi', usia=20)", explanation: "Keyword arguments dipanggil menggunakan format `nama=nilai`." },
+                { id: 31, type: 'multiple-choice', text: "Apakah fungsi lambda dapat berisi beberapa pernyataan (statements)?", clue: "Lambda untuk ekspresi tunggal saja.", options: ['Ya', 'Tidak'], answerIndex: 1, explanation: "Lambda hanya boleh berisi satu ekspresi, bukan beberapa statements." },
+                { id: 32, type: 'fill-in', text: "Isi: def compose(f, g):\n    return lambda x: f(g(x))\nApa fungsi dari compose?", clue: "Menggabungkan dua fungsi berurutan.", answer: "menggabungkan fungsi", explanation: "Compose menghasilkan fungsi baru yang pertama menjalankan `g` lalu `f`." },
+                { id: 33, type: 'multiple-choice', text: "Bagaimana menuliskan tipe variadic keyword args?", clue: "Simbol ganda bintang.", options: ['*kwargs', '**kwargs', '*args'], answerIndex: 1, explanation: "`**kwargs` digunakan untuk menangkap keyword variadic args." },
+                { id: 34, type: 'fill-in', text: "Lengkapi untuk membuat generator: def count_up(n):\n    i = 0\n    while i < n:\n        yield i\n        i += 1", clue: "Keyword untuk menghasilkan nilai sambil menyimpan state.", answer: "yield", explanation: "`yield` membuat fungsi menjadi generator yang mengembalikan iterator." },
+                { id: 35, type: 'multiple-choice', text: "Mengapa memecah kode menjadi fungsi membantu?", clue: "Modularitas dan reuse.", options: ['Memperburuk kinerja', 'Memudahkan reuse dan testing', 'Selalu membuat lebih cepat'], answerIndex: 1, explanation: "Fungsi membantu modularisasi, reuse, dan testing." }
+            ],
+            d_oop: [
+                { id: 1, type: 'multiple-choice', text: "Apa itu class dalam OOP?", clue: "Blueprint untuk objek.", options: ['Instance dari objek', 'Blueprint/Template untuk objek', 'Fungsi khusus'], answerIndex: 1, explanation: "Class adalah template untuk membuat objek (instance)." },
+                { id: 2, type: 'fill-in', text: "Isi: class Mobil():\n    def __init__(self, merk):\n        self.merk = ___", clue: "Penugasan properti ke instance.", answer: "merk", explanation: "`self.merk = merk` menyimpan argumen ke atribut instance." },
+                { id: 3, type: 'multiple-choice', text: "Apa arti `self` di method class?", clue: "Merujuk pada instance saat ini.", options: ['Nama konvensional untuk instance', 'Keyword Python khusus', 'Variabel global'], answerIndex: 0, explanation: "`self` secara konvensional merujuk pada instance objek itu sendiri." },
+                { id: 4, type: 'fill-in', text: "Bagaimana membuat instance dari class Person? p = Person(___)", clue: "Isi dengan argumen yang diperlukan constructor.", answer: "'Andi'", explanation: "Contoh pemanggilan constructor `Person('Andi')`." },
+                { id: 5, type: 'multiple-choice', text: "Apa itu inheritance (pewarisan)?", clue: "Sebuah class dapat mewarisi perilaku dari class lain.", options: ['Menggabungkan dua objek', 'Membuat class baru berdasarkan class lama', 'Menguji kode'], answerIndex: 1, explanation: "Inheritance memungkinkan sebuah class baru mewarisi atribut dan method dari class lain." },
+                { id: 6, type: 'fill-in', text: "Tulis sintaks pewarisan: class Anak(____): pass", clue: "Masukkan nama parent class.", answer: "OrangTua", explanation: "`class Anak(OrangTua):` menunjukkan pewarisan dari `OrangTua`." },
+                { id: 7, type: 'multiple-choice', text: "Apa method khusus untuk merepresentasikan objek sebagai string?", clue: "Digunakan oleh fungsi `str()`.", options: ['__repr__', '__str__', '__iter__'], answerIndex: 1, explanation: "`__str__` biasanya digunakan untuk representasi 'user-friendly' dari objek." },
+                { id: 8, type: 'fill-in', text: "Bagaimana menandai method sebagai 'static method'? @___", clue: "Dekorator built-in.", answer: "staticmethod", explanation: "Gunakan `@staticmethod` untuk method yang tidak menggunakan `self`." },
+                { id: 9, type: 'multiple-choice', text: "Apa perbedaan `@staticmethod` dan `@classmethod`?", clue: "Salah satu menerima class sebagai argumen.", options: ['classmethod menerima cls, staticmethod tidak menerima default arg', 'Keduanya sama', 'staticmethod menerima cls'], answerIndex: 0, explanation: "`@classmethod` menerima `cls` (class) sebagai argumen pertama, sementara `@staticmethod` tidak menerima `self` atau `cls`." },
+                { id: 10, type: 'fill-in', text: "Isi: Untuk menyembunyikan atribut dari 'user' biasanya diberi prefix ___ pada nama atribut.", clue: "Konvensi Python (satu atau dua underscore).", answer: "_ atau __", explanation: "Satu underscore menandai atribut insternal; dua underscore memicu name mangling." },
+                { id: 11, type: 'multiple-choice', text: "Apa itu polymorphism dalam OOP?", clue: "Method dengan nama sama, implementasi berbeda.", options: ['Satu fungsi untuk semua bahasa', 'Objek dari class berbeda merespon method yang sama', 'Inheritance tanpa method override'], answerIndex: 1, explanation: "Polymorphism memungkinkan objek berbeda merespon method yang sama dengan cara berbeda." },
+                { id: 12, type: 'fill-in', text: "Bagaimana memanggil method `greet` pada instance `u`?", clue: "Panggil menggunakan titik.", answer: "u.greet()", explanation: "Instance method dipanggil dengan `instance.method()`." },
+                { id: 13, type: 'multiple-choice', text: "Apa yang akan terjadi jika Anda mencoba mengakses atribut yang tidak ada?", clue: "Python akan mengangkat exception terkait atribut.", options: ['Mengembalikan None', 'AttributeError', 'KeyError'], answerIndex: 1, explanation: "Mengakses atribut yang tidak ada pada object akan memunculkan `AttributeError`." },
+                { id: 14, type: 'fill-in', text: "Cara memanggil constructor parent dari child: super().___(args)", clue: "Method khusus parent untuk inisialisasi.", answer: "__init__", explanation: "`super().__init__(...)` lazim digunakan untuk memanggil konstruktor parent." },
+                { id: 15, type: 'multiple-choice', text: "Apa manfaat menggunakan enkapsulasi?", clue: "Memproteksi internal state objek.", options: ['Mempercepat eksekusi', 'Membatasi akses langsung ke atribut internal', 'Mengganti metode global'], answerIndex: 1, explanation: "Enkapsulasi membantu menjaga invariants dan mengurangi coupling antar bagian kode." },
+                { id: 16, type: 'fill-in', text: "Isi: class A:\n    def method(self):\n        pass\nUntuk membuat objek a dari class A: a = ___", clue: "Pemanggilan constructor tanpa argumen.", answer: "A()", explanation: "`A()` membuat instance baru dari class A." },
+                { id: 17, type: 'multiple-choice', text: "Manakah yang BUKAN prinsip OOP klasik?", clue: "Pilih yang bukan: encapsulation, inheritance, polymorphism, atau debugging.", options: ['Encapsulation', 'Inheritance', 'Polymorphism', 'Debugging'], answerIndex: 3, explanation: "Debugging bukan prinsip OOP." },
+                { id: 18, type: 'fill-in', text: "Bagaimana menambahkan atribut class (bukan instance)? class A: ___ = 0", clue: "Definisikan variabel di level class.", answer: "counter", explanation: "Variabel yang didefinisikan langsung di body class adalah atribut class." },
+                { id: 19, type: 'multiple-choice', text: "Apa itu method 'magic' atau 'dunder' (double underscore)?", clue: "Dimulai dan diakhiri dengan dua underscore.", options: ['Method biasa', 'Method spesial Python dengan nama __name__', 'Variabel global'], answerIndex: 1, explanation: "Dunder methods seperti `__init__`, `__str__` adalah method khusus yang dipanggil oleh interpreter." },
+                { id: 20, type: 'fill-in', text: "Sintaks override method: class B(A):\n    def greet(self):\n        ___", clue: "Isi dengan implementasi baru misalnya print.", answer: "print('Hi')", explanation: "Override melakukan definisi ulang method pada subclass." },
+                { id: 21, type: 'multiple-choice', text: "Apa itu composition dibanding inheritance?", clue: "Salah satu berarti 'has-a' relationship.", options: ['Has-a (composition) vs is-a (inheritance)', 'Sama saja', 'Pattern untuk testing'], answerIndex: 0, explanation: "Composition memanfaatkan objek lain sebagai atribut (has-a), sementara inheritance adalah is-a." },
+                { id: 22, type: 'fill-in', text: "Bagaimana menghapus atribut dari instance u? del u.___", clue: "Gunakan nama atribut.", answer: "nama_atribut", explanation: "`del u.nama_atribut` menghapus atribut dari instance jika ada." },
+                { id: 23, type: 'multiple-choice', text: "Apa output jika __repr__ dan __str__ keduanya didefinisikan dan print(obj) dipanggil?", clue: "Python memilih __str__ jika tersedia.", options: ['__repr__ dipanggil', '__str__ dipanggil', 'Keduanya dipanggil'], answerIndex: 1, explanation: "`print()` menggunakan `__str__` jika tersedia; jika tidak ada, `__repr__` digunakan." },
+                { id: 24, type: 'fill-in', text: "Apa keyword untuk membuat abstract base class sederhana?", clue: "Gunakan modul abc dan decorator.", answer: "ABC", explanation: "Dengan `from abc import ABC, abstractmethod` Anda dapat membuat abstract base class menggunakan `ABC` dan `@abstractmethod`." },
+                { id: 25, type: 'multiple-choice', text: "Apa yang dimaksud dengan 'instance attribute'?", clue: "Property yang spesifik untuk setiap instance.", options: ['Atribut yang milik class', 'Atribut yang milik instance tertentu', 'Method static'], answerIndex: 1, explanation: "Instance attribute disimpan per instance dan berbeda antar objek." },
+                { id: 26, type: 'fill-in', text: "Bagaimana mengecek apakah objek o adalah instance dari class C? isinstance(o, ___)", clue: "Isi dengan nama class.", answer: "C", explanation: "`isinstance(o, C)` mengembalikan True jika o adalah instance dari C atau subclassnya." },
+                { id: 27, type: 'multiple-choice', text: "Apa kegunaan property decorator @property?", clue: "Membuat method terlihat seperti atribut.", options: ['Membuat method private', 'Membuat method dapat diakses tanpa tanda kurung', 'Menghapus atribut'], answerIndex: 1, explanation: "`@property` memungkinkan Anda mengakses method seperti atribut tanpa memanggilnya." },
+                { id: 28, type: 'fill-in', text: "Tulis sintaks untuk membuat class kosong: class X: ___", clue: "Gunakan pass jika tidak ada body.", answer: "pass", explanation: "`pass` digunakan sebagai placeholder jika body class kosong." },
+                { id: 29, type: 'multiple-choice', text: "Apa itu method 'factory'?", clue: "Method atau fungsi yang mengembalikan instance.", options: ['Method yang membuat objek', 'Method untuk menghancurkan objek', 'Method untuk debugging'], answerIndex: 0, explanation: "Factory method membuat dan mengembalikan objek baru, sering digunakan untuk enkapsulasi pembuatan instance." },
+                { id: 30, type: 'fill-in', text: "Bagaimana menambahkan dokumentasi class? ___ = 'deskripsi' di body class atau gunakan docstring triple quotes.", clue: "Gunakan dokumen singkat di atas body class.", answer: '"""Deskripsi"""', explanation: "Docstring class ditulis di baris pertama body class menggunakan triple quotes." },
+                { id: 31, type: 'multiple-choice', text: "Mana pernyataan tentang multiple inheritance?", clue: "Class dapat mewarisi dari lebih dari satu parent.", options: ['Tidak mungkin di Python', 'Python mendukung multiple inheritance', 'Hanya via mixin'], answerIndex: 1, explanation: "Python mendukung multiple inheritance, namun harus hati-hati menggunakan method resolution order (MRO)." },
+                { id: 32, type: 'fill-in', text: "Sintaks untuk memanggil method class (bukan instance): Class.method(___)", clue: "Biasanya Anda pass instance atau data yang diperlukan.", answer: "instance", explanation: "Memanggil method yang mengharapkan instance biasanya memerlukan instance sebagai argumen jika dipanggil dari class." },
+                { id: 33, type: 'multiple-choice', text: "Apa itu MRO (method resolution order)?", clue: "Menentukan urutan pencarian method dalam inheritance chain.", options: ['Prioritas eksekusi fungsi', 'Urutan pencarian method untuk inheritance', 'Sistem logging'], answerIndex: 1, explanation: "MRO menentukan bagaimana Python mencari method ketika ada pewarisan multipel." },
+                { id: 34, type: 'fill-in', text: "Bagaimana menandai method sebagai private (konvensi)? def __my(self): ___", clue: "Gunakan double underscore prefix pada nama method.", answer: "pass", explanation: "Double underscore memicu name mangling untuk mengurangi kemungkinan akses langsung." },
+                { id: 35, type: 'multiple-choice', text: "Kenapa testing unit penting untuk class?", clue: "Memastikan perilaku unit kecil.", options: ['Untuk memperlambat pengembangan', 'Untuk memverifikasi fungsi dan integritas method secara terpisah', 'Tidak penting'], answerIndex: 1, explanation: "Unit tests membantu memastikan bahwa class dan method bekerja sesuai ekspektasi." }
+            ],
+            d_file: [
+                { id: 1, type: 'multiple-choice', text: "Bagaimana membuka file untuk membaca teks?", clue: "Mode 'r' berarti read.", options: ['open(file, "w")', 'open(file, "r")', 'open(file, "x")'], answerIndex: 1, explanation: "Gunakan mode 'r' untuk membaca file." },
+                { id: 2, type: 'fill-in', text: "Lengkapi: with open('data.txt', 'r') as f:\n    content = f.___()", clue: "Method untuk membaca seluruh isi file.", answer: "read", explanation: "`f.read()` mengembalikan seluruh teks file sebagai string." },
+                { id: 3, type: 'multiple-choice', text: "Apa mode untuk menulis (overwrite) file?", clue: "Mode yang menulis dan menghapus isi lama.", options: ['r', 'w', 'a'], answerIndex: 1, explanation: "Mode 'w' membuka file untuk menulis dan menimpa isi lama." },
+                { id: 4, type: 'fill-in', text: "Untuk menambahkan ke akhir file gunakan mode '___'", clue: "Append mode.", answer: "a", explanation: "Mode 'a' membuka file untuk penambahan di akhir (append)." },
+                { id: 5, type: 'multiple-choice', text: "Apa fungsi method `f.readline()`?", clue: "Membaca satu baris saja.", options: ['Membaca seluruh file', 'Membaca satu baris', 'Menulis satu baris'], answerIndex: 1, explanation: "`readline()` mengembalikan satu baris dari file setiap kali dipanggil." },
+                { id: 6, type: 'fill-in', text: "Bagaimana menulis teks 'Halo' ke file? f.write('___')", clue: "String yang ingin ditulis.", answer: "Halo", explanation: "`f.write('Halo')` menambahkan teks ke file (tergantung mode)." },
+                { id: 7, type: 'multiple-choice', text: "Apa yang dilakukan 'with open(...) as f:'?", clue: "Mengelola context dan menutup file otomatis.", options: ['Membuka file tanpa menutup', 'Menjamin file ditutup saat block selesai', 'Membaca file ke memori penuh'], answerIndex: 1, explanation: "'with' menggunakan context manager yang menutup file otomatis setelah block selesai." },
+                { id: 8, type: 'fill-in', text: "Metode untuk mendapatkan list dari baris file: lines = f.___()", clue: "Method ini memecah file menjadi baris-baris.", answer: "readlines", explanation: "`readlines()` mengembalikan list baris dari file." },
+                { id: 9, type: 'multiple-choice', text: "Bagaimana membuka file dalam binary mode?", clue: "Gunakan sufiks 'b'.", options: ['open(file, "rb")', 'open(file, "r")', 'open(file, "b")'], answerIndex: 0, explanation: "Mode 'rb' membuka file untuk membaca dalam format binary." },
+                { id: 10, type: 'fill-in', text: "Untuk mengganti seluruh konten file gunakan open('f.txt', 'w') dan kemudian f.___('text')", clue: "Method untuk menulis string.", answer: "write", explanation: "`write()` menulis string ke file (tanpa menambahkan newline otomatis)." },
+                { id: 11, type: 'multiple-choice', text: "Apa yang harus Anda lakukan sebelum menulis ke file?", clue: "Pastikan file dibuka dengan mode yang tepat.", options: ['Membuka dengan r', 'Membuka dengan w atau a', 'Menutup file dulu'], answerIndex: 1, explanation: "Untuk menulis, file harus dibuka dengan mode 'w', 'a', atau 'x'." },
+                { id: 12, type: 'fill-in', text: "Bagaimana menghapus file di Python? import os; os.___('file.txt')", clue: "Method untuk menghapus file pada modul os.", answer: "remove", explanation: "`os.remove('file.txt')` menghapus file." },
+                { id: 13, type: 'multiple-choice', text: "Apa yang dilakukan mode 'x' saat membuka file?", clue: "Membuat file baru atau error jika sudah ada.", options: ['Membuka file untuk baca', 'Membuat file baru dan error jika ada', 'Menambahkan ke file'], answerIndex: 1, explanation: "Mode 'x' membuat file baru dan memunculkan error jika file sudah ada." },
+                { id: 14, type: 'fill-in', text: "Untuk membaca file teks baris per baris secara efisien: for line in f: __", clue: "Looping untuk memproses setiap baris.", answer: "process(line)", explanation: "Anda bisa mengiterasi file langsung untuk membaca baris satu per satu." },
+                { id: 15, type: 'multiple-choice', text: "Apa yang paling mungkin menyebabkan IOError saat mengakses file?", clue: "Salah satu penyebab adalah file tidak ditemukan.", options: ['File tidak ditemukan', 'File kosong', 'File read-only but writable'], answerIndex: 0, explanation: "`FileNotFoundError` (subclass dari IOError/OSError) muncul jika file tidak ada." },
+                { id: 16, type: 'fill-in', text: "Bagaimana menulis baris baru setelah menulis string? f.write('text' + ___)", clue: "Escape sequence untuk newline.", answer: "\n", explanation: "Gunakan '\n' untuk menambahkan newline." },
+                { id: 17, type: 'multiple-choice', text: "Apa kegunaan method f.flush()?", clue: "Memastikan buffer ditulis ke disk.", options: ['Mengosongkan file', 'Memaksa isi buffer ditulis ke disk', 'Menutup file'], answerIndex: 1, explanation: "`flush()` memaksa buffer internal ditulis ke disk atau OS." },
+                { id: 18, type: 'fill-in', text: "Untuk mendapatkan ukuran file: import os; os.___('file.txt')", clue: "Method di modul os yang mengembalikan ukuran file dalam byte.", answer: "stat('file.txt').st_size", explanation: "`os.stat(path).st_size` mengembalikan ukuran file dalam byte." },
+                { id: 19, type: 'multiple-choice', text: "Apa output dari membaca file pointer setelah open(...)?", clue: "Pointer mulai di awal file kecuali mode berbeda.", options: ['File pointer di akhir', 'File pointer di awal', 'Pointer acak'], answerIndex: 1, explanation: "Setelah membuka file untuk baca, pointer berada di awal file (offset 0)." },
+                { id: 20, type: 'fill-in', text: "Metode untuk memindahkan posisi pointer file: f.___(offset, whence)", clue: "Method yang mengatur posisi baca/tulis.", answer: "seek", explanation: "`seek()` mengubah posisi pointer file." },
+                { id: 21, type: 'multiple-choice', text: "Apa yang terjadi jika Anda menulis bytes ke file yang dibuka dengan mode teks?", clue: "Mode teks mengharapkan string, bukan bytes.", options: ['TypeError', 'Auto-convert', 'Silent ignore'], answerIndex: 0, explanation: "Menulis bytes ke file teks akan memunculkan `TypeError`." },
+                { id: 22, type: 'fill-in', text: "Untuk membaca chunk dengan ukuran tertentu: data = f.___(10)", clue: "Method untuk membaca sejumlah byte/karakter.", answer: "read", explanation: "`f.read(n)` membaca hingga n karakter/byte tergantung mode." },
+                { id: 23, type: 'multiple-choice', text: "Apa teknik aman untuk menulis file baru atomically?", clue: "Gunakan temp file dan pindahkan.", options: ['Tulis langsung ke target', 'Tulis ke temporary lalu replace', 'Gunakan open(..., "r")'], answerIndex: 1, explanation: "Tulis ke temporary file lalu rename/replace lebih aman untuk mencegah korupsi." },
+                { id: 24, type: 'fill-in', text: "Untuk membuka file dengan encoding UTF-8: open('f.txt', 'r', encoding='___')", clue: "Encoding umum untuk teks modern.", answer: "utf-8", explanation: "Gunakan encoding='utf-8' untuk membaca teks unicode dengan benar." },
+                { id: 25, type: 'multiple-choice', text: "Mengapa penting menutup file?", clue: "Untuk melepaskan resource dan menulis buffer.", options: ['Tidak penting', 'Untuk menutup descriptor dan flush buffer', 'Hanya untuk Windows'], answerIndex: 1, explanation: "Menutup file melepaskan file descriptor dan memastikan data di-buffer tertulis." },
+                { id: 26, type: 'fill-in', text: "Bagaimana membaca file CSV sederhana menggunakan modul built-in? import csv; with open('d.csv') as f: reader = csv.___(f)", clue: "Fungsi untuk membaca CSV.", answer: "reader", explanation: "`csv.reader(f)` menghasilkan iterator baris CSV." },
+                { id: 27, type: 'multiple-choice', text: "Apa yang dilakukan os.replace(src, dst)?", clue: "Mengganti file secara atomik pada beberapa OS.", options: ['Meng-copy file', 'Mengganti/memindahkan src ke dst', 'Menghapus file dst saja'], answerIndex: 1, explanation: "`os.replace` menggantikan dst dengan src, sering kali atomically jika OS mendukungnya." },
+                { id: 28, type: 'fill-in', text: "Untuk membaca file biner dan mendapatkan bytes: with open('img.png', 'rb') as f: data = f.___()", clue: "Method untuk membaca semua bytes.", answer: "read", explanation: "`f.read()` pada mode 'rb' mengembalikan bytes." },
+                { id: 29, type: 'multiple-choice', text: "Apa yang dimaksud dengan file descriptor?", clue: "Integer low-level yang menunjuk resource open file.", options: ['String path', 'Integer yang mewakili file terbuka di OS', 'Objek file high-level'], answerIndex: 1, explanation: "File descriptor adalah integer yang dikelola OS untuk resource file terbuka." },
+                { id: 30, type: 'fill-in', text: "Bagaimana membuka file gzip? import gzip; with gzip.open('f.gz', 'rt') as f: data = f.___()", clue: "Baca teks setelah decompress.", answer: "read", explanation: "`gzip.open(..., 'rt')` membuka file gzip untuk baca teks." },
+                { id: 31, type: 'multiple-choice', text: "Apa masalah umum saat memproses file besar?", clue: "Ingat resource memory.", options: ['Memory usage tinggi jika baca seluruh file', 'File menjadi lebih ringan', 'Tidak ada masalah'], answerIndex: 0, explanation: "Membaca keseluruhan file ke memory dapat menyebabkan penggunaan memori berlebihan." },
+                { id: 32, type: 'fill-in', text: "Untuk mengecek apakah file ada: import os; os.___('file.txt')", clue: "Method sederhana untuk memeriksa keberadaan path.", answer: "path.exists", explanation: "`os.path.exists('file.txt')` mengembalikan True jika path ada." },
+                { id: 33, type: 'multiple-choice', text: "Apa perbedaan antara text mode dan binary mode?", clue: "Salah satunya melakukan decoding/encoding.", options: ['Text mode melakukan encoding/decoding, binary bekerja dengan bytes', 'Tidak ada perbedaan', 'Binary lebih lambat selalu'], answerIndex: 0, explanation: "Text mode mengurus decoding/encoding string; binary bekerja dengan bytes." },
+                { id: 34, type: 'fill-in', text: "Untuk mengganti baris tertentu, biasanya kita baca seluruh file, modifikasi, lalu tulis kembali: lines = f.readlines(); lines[1] = 'baru\n'; with open('f', 'w') as f: f.write(''.join(lines))", clue: "Method untuk menulis string gabungan.", answer: "write", explanation: "`write(''.join(lines))` menulis kembali konten yang dimodifikasi." },
+                { id: 35, type: 'multiple-choice', text: "Bagaimana menangani file lock saat menulis di lingkungan multi-proses?", clue: "Gunakan locking atau atomic replace.", options: ['Ignore', 'Gunakan lock atau atomic replace', 'Selalu gunakan mode r'], answerIndex: 1, explanation: "Menggunakan file lock atau strategi atomic replace membantu menghindari race condition saat menulis file." }
+            ],
+            d_error: [
+                { id: 1, type: 'multiple-choice', text: "Apa tipe exception ketika variabel tidak didefinisikan?", clue: "Biasanya Name...", options: ['TypeError', 'NameError', 'ValueError'], answerIndex: 1, explanation: "`NameError` terjadi ketika variabel belum didefinisikan." },
+                { id: 2, type: 'fill-in', text: "Lengkapi: try:\n    1/0\nexcept ___ as e:\n    print(e)", clue: "Pembagian oleh nol menghasilkan exception tertentu.", answer: "ZeroDivisionError", explanation: "`ZeroDivisionError` dilemparkan saat pembagian dengan nol." },
+                { id: 3, type: 'multiple-choice', text: "Apa yang dimaksud dengan traceback?", clue: "Jejak panggilan fungsi sampai terjadi error.", options: ['Ringkasan error', 'Jejak panggilan stack saat exception', 'Log file saja'], answerIndex: 1, explanation: "Traceback menunjukkan call stack yang menyebabkan exception." },
+                { id: 4, type: 'fill-in', text: "Keyword untuk menaikkan exception secara manual: ___ ValueError('x')", clue: "Satu kata.", answer: "raise", explanation: "`raise` digunakan untuk melempar exception secara manual." },
+                { id: 5, type: 'multiple-choice', text: "Apa exception yang umum saat mencoba mengakses indeks di luar range?", clue: "Index terkait.", options: ['IndexError', 'KeyError', 'TypeError'], answerIndex: 0, explanation: "`IndexError` terjadi ketika indeks berada di luar jangkauan sequence." },
+                { id: 6, type: 'fill-in', text: "Untuk menangkap semua exception gunakan: except ___:", clue: "Gunakan nama base exception (tidak direkomendasikan untuk produksi).", answer: "Exception", explanation: "`except Exception:` akan menangkap kebanyakan exception (kecuali BaseException dan turunannya tertentu)." },
+                { id: 7, type: 'multiple-choice', text: "Apa tujuan finally di blok try/except/finally?", clue: "Selalu dijalankan terlepas exception.", options: ['Hanya dijalankan jika ada exception', 'Selalu dijalankan', 'Digunakan untuk menangkap exception'], answerIndex: 1, explanation: "`finally` dieksekusi selalu, cocok untuk cleanup." },
+                { id: 8, type: 'fill-in', text: "Bagaimana mencetak jenis exception dari exception instance e? print(type(e).__name__)", clue: "Gunakan atribut type dan __name__ untuk nama kelas.", answer: "type(e).__name__", explanation: "`type(e).__name__` mengembalikan nama kelas exception." },
+                { id: 9, type: 'multiple-choice', text: "Apa perbedaan KeyError dan IndexError?", clue: "Satu untuk dict, satu untuk list/tuple.", options: ['KeyError untuk dict, IndexError untuk sequence index', 'Sama saja', 'KeyError untuk list'], answerIndex: 0, explanation: "`KeyError` untuk kunci dictionary; `IndexError` untuk indeks sequence." },
+                { id: 10, type: 'fill-in', text: "Untuk mengabaikan exception tertentu dan meneruskannya: except KeyError: ___", clue: "Gunakan pass untuk melewatkannya.", answer: "pass", explanation: "`pass` membuat blok except kosong sehingga exception diabaikan." },
+                { id: 11, type: 'multiple-choice', text: "Apa yang akan muncul jika Anda melakukan int('abc')?", clue: "Konversi string non-angka ke int.", options: ['ValueError', 'TypeError', 'ZeroDivisionError'], answerIndex: 0, explanation: "`ValueError` dilempar ketika konversi gagal karena format tidak sesuai." },
+                { id: 12, type: 'fill-in', text: "Dalam debugging, untuk memasukkan breakpoint: import pdb; pdb.___()", clue: "Method untuk mulai interaktif debugging.", answer: "set_trace", explanation: "`pdb.set_trace()` membuka debugger interaktif di titik tersebut." },
+                { id: 13, type: 'multiple-choice', text: "Apa kegunaan logging dibanding print saat debugging?", clue: "Salah satu dapat diatur level dan ditulis ke file.", options: ['Logging configurable dan bisa ditulis ke file', 'Print lebih canggih', 'Tidak ada perbedaan'], answerIndex: 0, explanation: "Logging lebih fleksibel dengan level, handler, dan format." },
+                { id: 14, type: 'fill-in', text: "Untuk memastikan resource dilepas bahkan saat error: try: ... finally: ___", clue: "Biasanya Anda panggil close() atau cleanup.", answer: "resource.close()", explanation: "`finally` cocok untuk cleanup seperti menutup file atau koneksi." },
+                { id: 15, type: 'multiple-choice', text: "Apa arti 'exception chaining' (raise ... from ...)?", clue: "Menghubungkan exception baru dengan yang lama.", options: ['Memadamkan exception sebelumnya', 'Menunjukkan exception penyebab', 'Membuat exception baru tanpa context'], answerIndex: 1, explanation: "`raise NewError from OriginalError` menunjukkan penyebab asli dalam traceback." },
+                { id: 16, type: 'fill-in', text: "Untuk memunculkan custom exception, buat class MyErr(___): pass", clue: "Turunkan dari Exception atau subclassnya.", answer: "Exception", explanation: "Custom exception biasanya merupakan subclass dari `Exception`." },
+                { id: 17, type: 'multiple-choice', text: "Apa risiko menangkap Exception umum tanpa spesifik?", clue: "Dapat menutupi bug atau kesalahan serius.", options: ['Mempercepat debugging', 'Menutup bug dan menyebabkan silent failure', 'Selalu aman'], answerIndex: 1, explanation: "Menangkap semua exception dapat menyembunyikan bug yang seharusnya ditangani atau dilaporkan." },
+                { id: 18, type: 'fill-in', text: "Bagaimana menampilkan pesan dan traceback? import traceback; traceback.print_exc()", clue: "Method di modul traceback untuk mencetak traceback saat ada exception.", answer: "print_exc", explanation: "`traceback.print_exc()` mencetak traceback ke stderr." }
+            ]
+        };
+        const questions = questionBank;
+
+
+        // Initialize user progress structure
+        for (const levelId in learningData) {
+            learningData[levelId].modules.forEach(module => {
+                state.user.progress[module.id] = 0;
+                state.user.correctCount[module.id] = 0;
+                state.user.incorrectQuestions[module.id] = [];
+            });
+        }
+
+        const contentViews = document.querySelectorAll('.content-view');
+        
+        const render = () => {
+            if (state.theme === 'dark') document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+            document.getElementById('login-view').classList.toggle('hidden', state.loggedIn);
+            document.getElementById('main-view').classList.toggle('hidden', !state.loggedIn);
+            if (state.loggedIn) {
+                contentViews.forEach(view => view.classList.toggle('hidden', view.id !== state.currentView));
+                document.querySelectorAll('nav .nav-link').forEach(link => {
+                    link.classList.toggle('nav-link-active', link.dataset.view === state.currentView);
+                });
+                document.getElementById('token-count').textContent = state.user.tokens;
+                document.getElementById('profile-name-display').textContent = state.user.name;
+                document.getElementById('profile-quote-display').textContent = `"${state.user.quote}"`;
+                document.getElementById('profile-pic').src = state.user.photo;
+                if (state.currentView === 'dashboard-view') renderLevelSelection();
+                if (state.currentView === 'roadmap-view') renderRoadmap();
+                if (state.currentView === 'profile-view') renderProfileProgress();
+            }
+            lucide.createIcons();
+        };
+
+        const renderLevelSelection = () => {
+            const container = document.getElementById('level-selection-container');
+            container.innerHTML = '';
+            for (const levelId in learningData) {
+                const level = learningData[levelId];
+                const totalModules = level.modules.length;
+                const totalCorrect = level.modules.reduce((sum, mod) => sum + state.user.correctCount[mod.id], 0);
+                const totalQuestions = totalModules * TOTAL_QUESTIONS_PER_MODULE;
+                const overallPercentage = totalQuestions > 0 ? (totalCorrect / totalQuestions) * 100 : 0;
+                
+                const card = document.createElement('div');
+                card.className = `level-card p-6 bg-surface-light dark:bg-surface-dark rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer border-2 border-transparent hover:border-primary`;
+                card.dataset.level = levelId;
+                card.innerHTML = `
+                    <i data-lucide="${level.icon}" class="w-12 h-12 text-${level.color}-500 mb-4"></i>
+                    <h2 class="text-xl font-bold mb-2">${level.title}</h2>
+                    <p class="text-sm text-secondary-dark dark:text-secondary-light mb-4">${level.description}</p>
+                    <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5">
+                        <div class="bg-${level.color}-500 h-2.5 rounded-full" style="width: ${overallPercentage}%"></div>
+                    </div>`;
+                card.addEventListener('click', (e) => showRoadmap(e.currentTarget.dataset.level));
+                container.appendChild(card);
+            }
+        };
+        
+        const showRoadmap = (levelId) => {
+            state.learning.level = levelId;
+            switchView('roadmap-view');
+        };
+
+        const renderRoadmap = () => {
+            const levelId = state.learning.level;
+            const level = learningData[levelId];
+            document.getElementById('roadmap-title').textContent = `Roadmap: ${level.title}`;
+            document.getElementById('roadmap-description').textContent = level.description;
+            
+            const container = document.getElementById('roadmap-container');
+            container.innerHTML = '';
+            let previousModuleUnlocked = true;
+            level.modules.forEach(module => {
+                const percentage = (state.user.correctCount[module.id] / TOTAL_QUESTIONS_PER_MODULE) * 100;
+                const isLocked = !previousModuleUnlocked;
+                
+                const card = document.createElement('div');
+                card.className = `module-card p-5 bg-surface-light dark:bg-surface-dark rounded-xl shadow-lg transition-all duration-300 flex items-center gap-5 ${isLocked ? 'locked' : 'hover:shadow-xl hover:ring-2 hover:ring-primary/50 cursor-pointer'}`;
+                if (!isLocked) card.dataset.module = module.id;
+
+                card.innerHTML = `
+                    <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-${module.color}-100 dark:bg-${module.color}-900/50 flex items-center justify-center">
+                       ${isLocked ? `<i data-lucide="lock" class="w-6 h-6 text-slate-500"></i>` : `<i data-lucide="${module.icon}" class="w-6 h-6 text-${module.color}-500"></i>`}
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-bold text-lg">${module.title}</h3>
+                        <p class="text-sm text-secondary-dark dark:text-secondary-light">${module.description}</p>
+                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2 mt-2">
+                            <div class="bg-${module.color}-500 h-2 rounded-full" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                    <div class="text-sm font-semibold">${Math.round(percentage)}%</div>`;
+                
+                if (!isLocked) card.addEventListener('click', (e) => showMaterial(e.currentTarget.dataset.module));
+                container.appendChild(card);
+                if (percentage < 50) {
+                    previousModuleUnlocked = false;
+                }
+            });
+        };
+
+        const renderProfileProgress = () => {
+            const container = document.getElementById('profile-progress-container');
+            container.innerHTML = '';
+            for (const levelId in learningData) {
+                const level = learningData[levelId];
+                const levelDiv = document.createElement('div');
+                
+                let modulesHTML = '';
+                level.modules.forEach(module => {
+                    const percentage = (state.user.correctCount[module.id] / TOTAL_QUESTIONS_PER_MODULE) * 100;
+                    const radius = 50;
+                    const circumference = 2 * Math.PI * radius;
+                    const offset = circumference - (percentage / 100) * circumference;
+
+                    modulesHTML += `
+                    <div class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-md flex flex-col items-center text-center">
+                        <div class="relative w-28 h-28 mb-3">
+                            <svg class="w-full h-full" viewBox="0 0 120 120">
+                                <circle class="text-slate-200 dark:text-slate-700" stroke-width="10" stroke="currentColor" fill="transparent" r="${radius}" cx="60" cy="60"/>
+                                <circle
+                                    class="text-${module.color}-500"
+                                    stroke-width="10"
+                                    stroke-dasharray="${circumference}"
+                                    stroke-dashoffset="${offset}"
+                                    stroke-linecap="round"
+                                    stroke="currentColor"
+                                    fill="transparent"
+                                    r="${radius}"
+                                    cx="60"
+                                    cy="60"
+                                    transform="rotate(-90 60 60)"
+                                    style="transition: stroke-dashoffset 0.5s ease-out;"
+                                />
+                            </svg>
+                            <div class="absolute inset-0 flex flex-col items-center justify-center">
+                                <span class="text-2xl font-bold">${Math.round(percentage)}%</span>
+                            </div>
+                        </div>
+                        <p class="font-semibold text-sm">${module.title}</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">${state.user.correctCount[module.id]} / ${TOTAL_QUESTIONS_PER_MODULE} soal</p>
+                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
+                            <div class="bg-${module.color}-500 h-2 rounded-full" style="width: ${percentage}%"></div>
+                        </div>
+                    </div>
+                    `;
+                });
+
+                levelDiv.innerHTML = `
+                    <h2 class="text-2xl font-bold mb-6 text-center md:text-left text-${level.color}-500">${level.title}</h2>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                        ${modulesHTML}
+                    </div>
+                `;
+                container.appendChild(levelDiv);
+            }
+        };
+
+
+        const switchView = (viewId) => {
+            state.currentView = viewId;
+            render();
+        };
+        
+        const showMaterial = (moduleId) => {
+            const level = learningData[state.learning.level];
+            const module = level.modules.find(m => m.id === moduleId);
+            document.getElementById('material-title').textContent = `Materi: ${module.title}`;
+            
+            const materialContentEl = document.getElementById('material-content');
+            materialContentEl.innerHTML = learningMaterials[moduleId] || '<p>Materi untuk modul ini belum tersedia.</p>';
+            
+            document.getElementById('start-quiz-button').dataset.module = moduleId;
+            switchView('material-view');
+        };
+
+        const startModule = (moduleId) => {
+            state.learning.module = moduleId;
+            state.learning.mode = 'normal';
+            switchView('learning-view');
+            loadQuestion();
+        };
+
+        const startRemedialSession = () => {
+            state.learning.mode = 'remedial';
+            switchView('learning-view');
+            loadQuestion();
+        };
+
+        const showCompletionScreen = () => {
+            switchView('completion-view');
+            const { module, level } = state.learning;
+            const moduleData = learningData[level].modules.find(m => m.id === module);
+            document.getElementById('completion-message').textContent = `Anda telah menyelesaikan semua soal di modul "${moduleData.title}". Hebat!`;
+            const remedialButton = document.getElementById('remedial-button');
+            if (state.user.incorrectQuestions[module].length === 0) {
+                remedialButton.classList.add('hidden');
+            } else {
+                remedialButton.classList.remove('hidden');
+            }
+        };
+        
+        const loadQuestion = () => {
+            const { module, mode, level } = state.learning;
+            const moduleData = learningData[level].modules.find(m => m.id === module);
+            let currentQuestion, currentIndex, totalQuestions;
+
+            if (mode === 'remedial') {
+                totalQuestions = state.user.incorrectQuestions[module].length;
+                if (totalQuestions === 0) { showCompletionScreen(); return; }
+                currentQuestion = state.user.incorrectQuestions[module][0];
+            } else {
+                currentIndex = state.user.progress[module];
+                totalQuestions = questions[module].length;
+                if (currentIndex >= totalQuestions) { showCompletionScreen(); return; }
+                currentQuestion = questions[module][currentIndex];
+            }
+            
+            state.learning.selectedAnswerIndex = null;
+            document.getElementById('learning-title').innerHTML = `${moduleData.title} - Soal #<span id="question-number">${currentQuestion.id}</span>`;
+            document.getElementById('question-counter').textContent = `${mode === 'remedial' ? 'Sisa ' + totalQuestions : (currentIndex + 1) + ' / ' + totalQuestions}`;
+            document.getElementById('question-text').innerHTML = currentQuestion.text.replace(/\n/g, '<br>');
+            
+            ['clue-container', 'feedback-container', 'next-question'].forEach(id => document.getElementById(id).classList.add('hidden'));
+            ['submit-answer', 'get-clue'].forEach(id => document.getElementById(id).classList.remove('hidden'));
+            document.getElementById('submit-answer').disabled = false;
+            
+            const fillInContainer = document.getElementById('fill-in-container');
+            const mcContainer = document.getElementById('multiple-choice-container');
+            const codeAnswerEl = document.getElementById('code-answer');
+
+            if (currentQuestion.type === 'fill-in') {
+                mcContainer.classList.add('hidden');
+                fillInContainer.classList.remove('hidden');
+                codeAnswerEl.value = '';
+                codeAnswerEl.readOnly = false;
+            } else { // multiple-choice
+                mcContainer.classList.remove('hidden');
+                fillInContainer.classList.add('hidden');
+                const optionsList = document.getElementById('mc-options-list');
+                optionsList.innerHTML = '';
+                currentQuestion.options.forEach((option, index) => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span class="font-mono text-xs mr-3">${String.fromCharCode(65 + index)}.</span> ${option}`;
+                    li.dataset.index = index;
+                    li.className = 'mc-option flex items-center p-3 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-primary/10 hover:border-primary';
+                    li.addEventListener('click', () => {
+                        if (document.getElementById('submit-answer').disabled) return;
+                        optionsList.querySelectorAll('li').forEach(item => item.classList.remove('selected'));
+                        li.classList.add('selected');
+                        state.learning.selectedAnswerIndex = index;
+                    });
+                    optionsList.appendChild(li);
+                });
+            }
+        };
+
+        const checkAnswer = () => {
+            const { module, mode, selectedAnswerIndex } = state.learning;
+            let currentQuestion = mode === 'remedial' ? state.user.incorrectQuestions[module][0] : questions[module][state.user.progress[module]];
+            let isCorrect = false;
+            const feedbackContainer = document.getElementById('feedback-container');
+            const feedbackText = document.getElementById('feedback-text');
+
+            if (currentQuestion.type === 'fill-in') {
+                const userAnswer = document.getElementById('code-answer').value.trim();
+                 if (userAnswer === '') {
+                    feedbackContainer.className = 'p-4 rounded-lg bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300';
+                    feedbackText.innerHTML = `<p class="font-bold">Jawaban tidak boleh kosong.</p>`;
+                    feedbackContainer.classList.remove('hidden');
+                    setTimeout(() => { feedbackContainer.classList.add('hidden'); }, 2000);
+                    return;
+                }
+                isCorrect = userAnswer.toLowerCase() === currentQuestion.answer.toLowerCase();
+            } else { // multiple-choice
+                if (selectedAnswerIndex === null) { 
+                    feedbackContainer.className = 'p-4 rounded-lg bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300';
+                    feedbackText.innerHTML = `<p class="font-bold">Silakan pilih salah satu jawaban.</p>`;
+                    feedbackContainer.classList.remove('hidden');
+                    setTimeout(() => { feedbackContainer.classList.add('hidden'); }, 2000);
+                    return; 
+                }
+                isCorrect = selectedAnswerIndex === currentQuestion.answerIndex;
+            }
+
+            document.getElementById('submit-answer').disabled = true;
+            document.getElementById('submit-answer').classList.add('hidden');
+            document.getElementById('get-clue').classList.add('hidden');
+            document.getElementById('next-question').classList.remove('hidden');
+            if (currentQuestion.type === 'fill-in') document.getElementById('code-answer').readOnly = true;
+
+            feedbackContainer.classList.remove('hidden');
+
+            if(isCorrect) {
+                feedbackContainer.className = 'p-4 rounded-lg bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300';
+                feedbackText.innerHTML = `<p class="font-bold">Jawaban Benar!</p><hr class="my-2 border-green-200 dark:border-green-700"><p class="text-sm">${currentQuestion.explanation}</p>`;
+                if (mode === 'normal') {
+                    state.user.correctCount[module]++;
+                    const tokenRules = { pemula: 5, menengah: 10, developer: 20 };
+                    if (state.user.correctCount[module] > 0 && state.user.correctCount[module] % tokenRules[state.learning.level] === 0) {
+                        state.user.tokens++;
+                    }
+                } else { state.user.incorrectQuestions[module].shift(); }
+            } else {
+                if (currentQuestion.type === 'multiple-choice') {
+                    document.querySelectorAll('#mc-options-list li').forEach(li => {
+                        const optionIndex = parseInt(li.dataset.index);
+                        if (optionIndex === currentQuestion.answerIndex) li.classList.add('!bg-green-500', '!text-white', '!border-green-600');
+                        else if (optionIndex === selectedAnswerIndex) li.classList.add('!bg-red-500', '!text-white', '!border-red-600');
+                    });
+                }
+                feedbackContainer.className = 'p-4 rounded-lg bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300';
+                const correctAnswerText = currentQuestion.type === 'fill-in' ? currentQuestion.answer : currentQuestion.options[currentQuestion.answerIndex];
+                feedbackText.innerHTML = `<p class="font-bold">Jawaban Kurang Tepat!</p><p class="text-sm">Jawaban yang benar: <strong class="font-mono bg-slate-200 dark:bg-slate-700 px-1 rounded">${correctAnswerText}</strong></p><hr class="my-2 border-red-200 dark:border-red-700"><p class="text-sm">${currentQuestion.explanation}</p>`;
+                
+                if (mode === 'normal' && !state.user.incorrectQuestions[module].find(q => q.id === currentQuestion.id)) {
+                    state.user.incorrectQuestions[module].push(currentQuestion);
+                } else if (mode === 'remedial') {
+                    state.user.incorrectQuestions[module].push(state.user.incorrectQuestions[module].shift());
+                }
+            }
+             lucide.createIcons();
+        };
+
+        const goToNextQuestion = () => {
+            if (state.learning.mode === 'normal') state.user.progress[state.learning.module]++;
+            loadQuestion();
+            render();
+        }
+
+        const showClue = () => {
+            const { module, mode } = state.learning;
+            const currentQuestion = mode === 'remedial' ? state.user.incorrectQuestions[module][0] : questions[module][state.user.progress[module]];
+            
+            if (!currentQuestion.clue) {
+                 console.log("Tidak ada petunjuk untuk soal ini.");
+                 return;
+            }
+
+            if (state.user.tokens > 0) {
+                state.user.tokens--;
+                document.getElementById('clue-text').textContent = currentQuestion.clue;
+                document.getElementById('clue-container').classList.remove('hidden');
+                render();
+            } else {
+                console.error("Token tidak cukup!");
+            }
+        };
+
+        const initializeProfileEditing = () => {
+            const nameDisplay = document.getElementById('profile-name-display');
+            const nameInput = document.getElementById('profile-name-input');
+            const editNameBtn = document.getElementById('edit-name-btn');
+            let isEditingName = false;
+
+            editNameBtn.addEventListener('click', () => {
+                isEditingName = !isEditingName;
+                if (isEditingName) {
+                    nameDisplay.classList.add('hidden');
+                    nameInput.classList.remove('hidden');
+                    nameInput.value = state.user.name;
+                    nameInput.focus();
+                    editNameBtn.innerHTML = '<i data-lucide="check" class="w-5 h-5 text-green-500"></i>';
+                } else {
+                    state.user.name = nameInput.value;
+                    nameDisplay.textContent = state.user.name;
+                    nameDisplay.classList.remove('hidden');
+                    nameInput.classList.add('hidden');
+                    editNameBtn.innerHTML = '<i data-lucide="pencil" class="w-5 h-5"></i>';
+                }
+                lucide.createIcons();
+            });
+
+            const quoteDisplay = document.getElementById('profile-quote-display');
+            const quoteInput = document.getElementById('profile-quote-input');
+            const editQuoteBtn = document.getElementById('edit-quote-btn');
+            let isEditingQuote = false;
+
+            editQuoteBtn.addEventListener('click', () => {
+                isEditingQuote = !isEditingQuote;
+                if (isEditingQuote) {
+                    quoteDisplay.classList.add('hidden');
+                    quoteInput.classList.remove('hidden');
+                    quoteInput.value = state.user.quote;
+                    quoteInput.focus();
+                    editQuoteBtn.innerHTML = '<i data-lucide="check" class="w-5 h-5 text-green-500"></i>';
+                } else {
+                    state.user.quote = quoteInput.value;
+                    quoteDisplay.textContent = `"${state.user.quote}"`;
+                    quoteDisplay.classList.remove('hidden');
+                    quoteInput.classList.add('hidden');
+                    editQuoteBtn.innerHTML = '<i data-lucide="pencil" class="w-5 h-5"></i>';
+                }
+                lucide.createIcons();
+            });
+        };
+
+        // Event Listeners Setup
+        document.getElementById('login-button').addEventListener('click', () => { state.loggedIn = true; state.currentView = 'dashboard-view'; render(); });
+        document.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); switchView(e.currentTarget.dataset.view); }));
+        document.getElementById('back-to-dashboard-from-roadmap').addEventListener('click', () => switchView('dashboard-view'));
+        document.getElementById('back-to-roadmap-from-material').addEventListener('click', () => switchView('roadmap-view'));
+        document.getElementById('back-to-roadmap').addEventListener('click', () => switchView('roadmap-view'));
+        document.getElementById('start-quiz-button').addEventListener('click', (e) => startModule(e.currentTarget.dataset.module));
+        document.getElementById('submit-answer').addEventListener('click', checkAnswer);
+        document.getElementById('next-question').addEventListener('click', goToNextQuestion);
+        document.getElementById('get-clue').addEventListener('click', showClue);
+        document.getElementById('back-to-roadmap-from-completion').addEventListener('click', () => switchView('roadmap-view'));
+        document.getElementById('remedial-button').addEventListener('click', startRemedialSession);
+        document.getElementById('photo-upload').addEventListener('change', (e) => { if (e.target.files[0]) { const reader = new FileReader(); reader.onload = (event) => { state.user.photo = event.target.result; render(); }; reader.readAsDataURL(e.target.files[0]); } });
+        document.getElementById('theme-toggle').addEventListener('click', () => { state.theme = state.theme === 'light' ? 'dark' : 'light'; localStorage.setItem('theme', state.theme); render(); });
+        // Accessibility: update aria-pressed and visual state for theme-toggle
+        const themeBtn = document.getElementById('theme-toggle');
+        const updateThemeBtn = () => {
+            if (!themeBtn) return;
+            themeBtn.setAttribute('aria-pressed', state.theme === 'dark' ? 'true' : 'false');
+        };
+        updateThemeBtn();
+
+        // Avatar dropdown toggle (accessible)
+        const avatarBtn = document.getElementById('avatar-btn');
+        const avatarMenu = document.getElementById('avatar-menu');
+        if (avatarBtn && avatarMenu) {
+            avatarBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = !avatarMenu.classList.contains('hidden');
+                avatarMenu.classList.toggle('hidden');
+                avatarBtn.setAttribute('aria-expanded', String(!isOpen));
+            });
+
+            // Close on outside click
+            document.addEventListener('click', (e) => {
+                if (!avatarMenu.classList.contains('hidden') && !avatarMenu.contains(e.target) && !avatarBtn.contains(e.target)) {
+                    avatarMenu.classList.add('hidden');
+                    avatarBtn.setAttribute('aria-expanded', 'false');
+                }
+            });
+        }
+        
+        document.getElementById('change-music').addEventListener('click', () => {
+            const linkInput = document.getElementById('music-link');
+            let link = linkInput.value.trim();
+            const feedbackEl = document.getElementById('music-feedback');
+            let embedUrl = '';
+
+            if (link && !link.startsWith('http://') && !link.startsWith('https://')) {
+                link = 'https://' + link;
+            }
+
+            try {
+                const url = new URL(link);
+
+                if (url.hostname.includes("youtube.com") || url.hostname.includes("youtu.be")) {
+                    let videoId;
+                    if (url.searchParams.has("v")) {
+                        videoId = url.searchParams.get("v");
+                    } else {
+                        videoId = url.pathname.split("/").pop();
+                    }
+                    if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                } else if (url.hostname.includes("spotify.com")) {
+                    const spotifyRegex = /\/(track|playlist|album)\/([a-zA-Z0-9]+)/;
+                    const match = url.pathname.match(spotifyRegex);
+
+                    if (match && match[1] && match[2]) {
+                        const type = match[1];
+                        const id = match[2];
+                        embedUrl = `https://open.spotify.com/embed/${type}/${id}`;
+                    }
+                }
+
+                if (embedUrl) {
+                    document.getElementById('music-iframe').src = embedUrl;
+                    linkInput.value = '';
+                    feedbackEl.textContent = 'Playlist berhasil diganti!';
+                    feedbackEl.className = 'text-xs text-center mt-2 text-green-500';
+                    feedbackEl.classList.remove('hidden');
+                } else {
+                    throw new Error("Link tidak valid atau tidak didukung");
+                }
+            } catch (e) {
+                feedbackEl.textContent = 'Link tidak valid. Pastikan link Youtube atau Spotify lengkap.';
+                feedbackEl.className = 'text-xs text-center mt-2 text-red-500';
+                feedbackEl.classList.remove('hidden');
+            }
+
+            setTimeout(() => {
+                feedbackEl.classList.add('hidden');
+            }, 3000);
+        });
+
+        document.getElementById('toggle-music-player').addEventListener('click', () => document.getElementById('music-player-body').classList.toggle('hidden'));
+        
+        initializeProfileEditing();
+        render(); // Initial render
+    });
+    </script>
+</body>
+</html>
