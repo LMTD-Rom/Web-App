@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login - PythonPath</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;}</style>
+</head>
+<body class="bg-gray-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-md p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-lg text-center">
+    <h1 class="text-2xl font-bold mb-2">Login dengan Google</h1>
+    <p class="text-sm mb-6 text-slate-600 dark:text-slate-300">Halaman ini hanya untuk proses login. Setelah berhasil, Anda akan dikembalikan ke aplikasi.</p>
+
+    <div id="g_id_onload"
+         data-client_id="195220715967-oco8l37o9bfudqms8sudetekgoug6l8h.apps.googleusercontent.com"
+         data-callback="handleCredentialResponse"
+         data-ux_mode="popup"
+         data-auto_select="false">
+    </div>
+
+    <div class="g_id_signin mx-auto" data-type="standard" data-theme="outline" data-text="sign_in_with" data-shape="rectangular" data-ux_mode="popup"></div>
+
+    <p class="text-xs text-slate-500 dark:text-slate-400 mt-6">Jika login berhasil, progress Anda akan disimpan dan Anda akan kembali ke aplikasi.</p>
+  </div>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script>
+    // Storage key used by the app
+    const STORAGE_KEY = 'pythonpath_app_state_v1';
+
+    // Helper: merge into existing stored state
+    const saveLoginToLocal = (user) => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const current = raw ? JSON.parse(raw) : {};
+        const merged = Object.assign({}, current, {
+          loggedIn: true,
+          currentView: current.currentView || 'dashboard-view',
+          user: Object.assign({}, current.user || {}, user)
+        });
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      } catch (e) { console.error('saveLoginToLocal error', e); }
+    };
+
+    // Decode JWT (no verification) to get payload
+    const decodeJwtPayload = (token) => {
+      try {
+        const base64Url = token.split('.')[1] || '';
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+      } catch (e) { return null; }
+    };
+
+    // Callback invoked by Google's client
+    function handleCredentialResponse(response) {
+      try {
+        const credential = response?.credential || response?.id_token || response;
+        const payload = decodeJwtPayload(credential) || {};
+        const user = { name: payload.name || payload.email || 'Pengguna', photo: payload.picture || '' };
+        saveLoginToLocal(user);
+        // Give a small pause so the user sees success (and to allow storage flush), then redirect back
+        setTimeout(() => { window.location.href = './index.html'; }, 400);
+      } catch (e) {
+        console.error('handleCredentialResponse error', e);
+      }
+    }
+
+    // Expose globally because GSI uses the callback name
+    window.handleCredentialResponse = handleCredentialResponse;
+  </script>
+</body>
+</html>

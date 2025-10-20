@@ -45,5 +45,24 @@ app.get('/me', (req, res) => {
   res.json({ ok: true, user: s.payload });
 });
 
+// Progress endpoints: store and retrieve per-session progress
+app.post('/progress', (req, res) => {
+  const sid = req.cookies.session;
+  if (!sid || !sessions.has(sid)) return res.status(401).json({ error: 'Not authenticated' });
+  const s = sessions.get(sid);
+  s.progress = req.body.progress || s.progress || {};
+  s.correctCount = req.body.correctCount || s.correctCount || {};
+  s.incorrectQuestions = req.body.incorrectQuestions || s.incorrectQuestions || {};
+  sessions.set(sid, s);
+  res.json({ ok: true });
+});
+
+app.get('/progress', (req, res) => {
+  const sid = req.cookies.session;
+  if (!sid || !sessions.has(sid)) return res.status(401).json({ error: 'Not authenticated' });
+  const s = sessions.get(sid);
+  res.json({ ok: true, progress: s.progress || {}, correctCount: s.correctCount || {}, incorrectQuestions: s.incorrectQuestions || {} });
+});
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log('Auth server listening on', port));

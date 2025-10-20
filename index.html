@@ -18,7 +18,54 @@
             };
         }
     </script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+        // Global fallback functions for inline `onclick` attributes.
+        // These are defensive wrappers that operate directly on DOM so
+        // clicks won't throw ReferenceError if the main script hasn't
+        // attached its internal helpers yet.
+        (function () {
+            function hideLoginWarningImpl() {
+                try {
+                    const el = document.getElementById('login-warning');
+                    if (el) el.classList.add('hidden');
+                    if (window.__loginWarningTimer) {
+                        clearTimeout(window.__loginWarningTimer);
+                        window.__loginWarningTimer = null;
+                    }
+                    console.debug && console.debug('globalHideLoginWarning executed');
+                } catch (err) {
+                    console.error('globalHideLoginWarning error', err);
+                }
+            }
+
+            function toggleMusicImpl() {
+                try {
+                    const body = document.getElementById('music-player-body');
+                    if (!body) return;
+                    body.classList.toggle('hidden');
+                    console.debug && console.debug('globalToggleMusic executed, hidden=', body.classList.contains('hidden'));
+                } catch (err) {
+                    console.error('globalToggleMusic error', err);
+                }
+            }
+
+            function loginWithGoogleImpl() {
+                try {
+                    // Fallback: open auth.html in a new tab/window.
+                    // The main script may wire a richer flow; this ensures the button always does something.
+                    window.open('auth.html', '_blank');
+                    console.debug && console.debug('globalLoginWithGoogle executed');
+                } catch (err) {
+                    console.error('globalLoginWithGoogle error', err);
+                }
+            }
+
+            // Expose to global scope so inline onclick handlers can find them.
+            window.globalHideLoginWarning = hideLoginWarningImpl;
+            window.globalToggleMusic = toggleMusicImpl;
+            window.globalLoginWithGoogle = loginWithGoogleImpl;
+        })();
+    </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         /* Custom scrollbar: transparent track, styled thumb for light & dark modes */
@@ -96,6 +143,18 @@
             background-color: #334155 !important; /* slate-700 */
             color: #e2e8f0 !important; /* slate-200 */
         }
+        /* Login card enhancements */
+        .login-backdrop {
+            backdrop-filter: blur(6px);
+        }
+        .card-pop {
+            transform: translateY(8px) scale(0.995);
+            opacity: 0;
+            animation: cardPop 260ms ease forwards;
+        }
+        @keyframes cardPop {
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
     </style>
     <script>
         // Konfigurasi warna custom untuk Tailwind CSS
@@ -122,27 +181,37 @@
     <div id="app">
 
         <!-- Halaman Login -->
-        <section id="login-view" class="min-h-screen flex items-center justify-center fade-in p-4">
-            <div class="w-full max-w-sm p-8 space-y-6 bg-surface-light dark:bg-surface-dark rounded-2xl shadow-xl text-center">
-                <div class="flex justify-center">
-                   <svg class="w-20 h-20 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4M6 8l-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+        <section id="login-view" class="min-h-screen flex items-center justify-center fade-in p-6">
+            <div class="w-full max-w-md bg-gradient-to-br from-surface-light/80 to-surface-light p-1 rounded-3xl shadow-2xl dark:from-surface-dark/80 dark:to-surface-dark">
+                <div class="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                            <svg class="w-9 h-9 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 16 4-4-4-4M6 8l-4 4 4 4"/><path d="m14.5 4-5 16"/></svg>
+                        </div>
+                    </div>
+
+                    <h1 class="text-2xl sm:text-3xl font-extrabold mb-1 text-text-light dark:text-text-dark text-center">Selamat Datang di PythonPath</h1>
+                    <p class="text-sm text-secondary-dark dark:text-secondary-light text-center mb-6">Belajar Python secara bertahap. Masuk untuk menyimpan progres dan melanjutkan kapan saja.</p>
+
+                    <div class="space-y-4">
+                        <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                            <ul class="text-sm text-slate-600 dark:text-slate-300 space-y-2">
+                                <li class="flex items-center gap-2"><span class="inline-block w-2 h-2 rounded-full bg-primary"></span> Progress tersimpan otomatis</li>
+                                <li class="flex items-center gap-2"><span class="inline-block w-2 h-2 rounded-full bg-primary"></span> Kuis & materi interaktif</li>
+                                <li class="flex items-center gap-2"><span class="inline-block w-2 h-2 rounded-full bg-primary"></span> Mode remedial untuk latihan</li>
+                            </ul>
+                        </div>
+
+                    <!-- Simplified login: remove Google Sign-In UI integration here.
+                        Users proceed as guest and are reminded inside the app to login
+                        (Google sign-in is handled separately). -->
+
+                        <div class="text-center mt-4">
+                            <button id="guest-continue" class="inline-flex items-center gap-2 px-5 py-2 bg-primary text-white rounded-lg shadow hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary" aria-label="Masuk ke Website sebagai Tamu">Masuk ke Website</button>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Anda dapat masuk ke Google kapan saja untuk menyimpan progress ke cloud.</p>
+                        </div>
+                    </div>
                 </div>
-                <h1 class="text-3xl font-extrabold text-text-light dark:text-text-dark">Selamat Datang!</h1>
-                <p class="text-secondary-dark dark:text-secondary-light">Masuk untuk memulai petualangan coding Python Anda di PythonPath.</p>
-                             <div id="g_id_onload"
-                                 data-client_id="195220715967-oco8l37o9bfudqms8sudetekgoug6l8h.apps.googleusercontent.com"
-                                 data-callback="handleCredentialResponse"
-                                 data-ux_mode="popup"
-                                 data-auto_select="false">
-                </div>
-                             <div class="g_id_signin"
-                                 data-type="standard"
-                                 data-theme="outline"
-                                 data-text="sign_in_with"
-                                 data-shape="rectangular"
-                                 data-logo_alignment="left"
-                                 data-ux_mode="popup">
-                             </div>
             </div>
         </section>
 
@@ -173,11 +242,21 @@
                             <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
                             <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
                         </button>
+                        <!-- In-app Google login button (shown when not logged in) -->
+                        <button id="login-with-google-btn" onclick="globalLoginWithGoogle()" class="ml-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-sm hidden">
+                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21.35 11.1c0-.68-.06-1.36-.18-2.02H12v3.82h5.48c-.24 1.28-1 2.36-2.12 3.08v2.55h3.43c2.01-1.85 3.18-4.58 3.18-7.43z" fill="#4285F4"/><path d="M12 22c2.7 0 4.97-.9 6.63-2.44l-3.43-2.55c-.95.64-2.18 1.02-3.2 1.02-2.46 0-4.55-1.66-5.3-3.9H3.11v2.44C4.75 19.9 8.09 22 12 22z" fill="#34A853"/><path d="M6.7 13.13A6.99 6.99 0 016 12c0-.66.12-1.3.33-1.9V7.66H3.11A9.99 9.99 0 002 12c0 1.64.4 3.18 1.11 4.56l3.59-3.43z" fill="#FBBC05"/><path d="M12 6.4c1.47 0 2.8.5 3.85 1.48l2.88-2.88C16.96 3.3 14.69 2 12 2 8.09 2 4.75 4.1 3.11 7.66l3.59 2.44C7.45 8.06 9.54 6.4 12 6.4z" fill="#EA4335"/></svg>
+                            <span>Login dengan Google</span>
+                        </button>
                     </div>
                 </div>
             </header>
 
             <!-- Konten Halaman Dinamis -->
+            <!-- In-app warning shown when user is not logged in (suggests external login to persist progress) -->
+            <div id="login-warning" class="hidden relative bg-yellow-100 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-200 p-3 text-center">
+                <span class="font-medium">Perhatian:</span> Anda belum login. Progress disimpan secara lokal — login diperlukan agar progress tidak hilang jika berubah perangkat.
+                <button id="login-warning-close" onclick="globalHideLoginWarning()" aria-label="Tutup pemberitahuan" class="absolute right-3 top-2 text-yellow-900 dark:text-yellow-200 hover:opacity-80 z-50 cursor-pointer">&times;</button>
+            </div>
             <div id="content-container" class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 md:pb-8">
                 <!-- Dashboard/Level Selection View -->
                 <section id="dashboard-view" class="content-view fade-in">
@@ -419,6 +498,7 @@
         
         const state = {
             loggedIn: false,
+            isGuest: false, // new: true when user continues as guest (allows main view but not persistent cloud login)
             currentView: 'login-view',
             user: {
                 name: 'Nama Kamu',
@@ -438,6 +518,7 @@
             try {
                 const toStore = {
                     loggedIn: state.loggedIn,
+                    isGuest: state.isGuest,
                     currentView: state.currentView,
                     user: state.user,
                     learning: state.learning,
@@ -456,6 +537,7 @@
                 const parsed = JSON.parse(raw);
                 if (parsed.user) state.user = Object.assign({}, state.user, parsed.user);
                 if (typeof parsed.loggedIn === 'boolean') state.loggedIn = parsed.loggedIn;
+                if (typeof parsed.isGuest === 'boolean') state.isGuest = parsed.isGuest;
                 if (parsed.learning) state.learning = Object.assign({}, state.learning, parsed.learning);
                 if (parsed.theme) state.theme = parsed.theme;
                 if (parsed.currentView) state.currentView = parsed.currentView;
@@ -1173,29 +1255,79 @@ print(data_sorted)</code></pre>
             });
         }
 
-    // Load persisted state (if any) before querying views and initial render
+        // Load persisted state (if any) before querying views and initial render
     try { loadAppState(); } catch (e) { console.error('Initial loadAppState failed', e); }
+        // Guest continue button: mark user as guest (isGuest) so they can access main view
+        const _guestBtn = document.getElementById('guest-continue');
+        if (_guestBtn) {
+            _guestBtn.addEventListener('click', () => {
+                state.isGuest = true;
+                state.loggedIn = false; // still not a cloud-authenticated user
+                state.currentView = 'dashboard-view';
+                try { saveAppState(); } catch (e) { console.error('guest save error', e); }
+                render();
+            });
+        }
     const contentViews = document.querySelectorAll('.content-view');
         
         const render = () => {
             if (state.theme === 'dark') document.documentElement.classList.add('dark');
             else document.documentElement.classList.remove('dark');
-            document.getElementById('login-view').classList.toggle('hidden', state.loggedIn);
-            document.getElementById('main-view').classList.toggle('hidden', !state.loggedIn);
-            if (state.loggedIn) {
+            // Show login landing when not logged in and not a guest; otherwise show main app
+            const loginViewEl = document.getElementById('login-view');
+            const mainViewEl = document.getElementById('main-view');
+            const canAccessMain = state.loggedIn || state.isGuest;
+            if (canAccessMain) {
+                if (loginViewEl) loginViewEl.classList.add('hidden');
+                if (mainViewEl) mainViewEl.classList.remove('hidden');
+                // Show header login button to guests so they can upgrade to Google login.
+                const _loginBtn = document.getElementById('login-with-google-btn'); if (_loginBtn) _loginBtn.classList.toggle('hidden', state.loggedIn);
+            } else {
+                if (loginViewEl) loginViewEl.classList.remove('hidden');
+                if (mainViewEl) mainViewEl.classList.add('hidden');
+                const _loginBtn = document.getElementById('login-with-google-btn'); if (_loginBtn) _loginBtn.classList.remove('hidden');
+            }
+
+            // Show or hide the in-app login warning banner (only relevant inside main-view)
+            // The warning should display when the user is NOT logged in (guest users see the warning)
+            const loginWarn = document.getElementById('login-warning');
+            if (loginWarn) {
+                const wasHidden = loginWarn.classList.contains('hidden');
+                const shouldBeHidden = state.loggedIn;
+                loginWarn.classList.toggle('hidden', shouldBeHidden);
+
+                // When banner becomes visible, start auto-close timer (5s). If it becomes hidden, clear timer.
+                if (!shouldBeHidden && wasHidden) {
+                    // banner was just shown
+                    startLoginWarningTimer();
+                } else if (shouldBeHidden) {
+                    clearLoginWarningTimer();
+                }
+            }
+
+            // Update profile/display only when main-view is visible (either logged in or guest)
+            if (canAccessMain) {
                 contentViews.forEach(view => view.classList.toggle('hidden', view.id !== state.currentView));
                 document.querySelectorAll('nav .nav-link').forEach(link => {
                     link.classList.toggle('nav-link-active', link.dataset.view === state.currentView);
                 });
-                document.getElementById('token-count').textContent = state.user.tokens;
-                document.getElementById('profile-name-display').textContent = state.user.name;
-                document.getElementById('profile-quote-display').textContent = `"${state.user.quote}"`;
-                document.getElementById('profile-pic').src = state.user.photo;
+                const tokenCountEl = document.getElementById('token-count'); if (tokenCountEl) tokenCountEl.textContent = state.user.tokens;
+                const nameEl = document.getElementById('profile-name-display'); if (nameEl) nameEl.textContent = state.user.name;
+                const quoteEl = document.getElementById('profile-quote-display'); if (quoteEl) quoteEl.textContent = `"${state.user.quote}"`;
+                const picEl = document.getElementById('profile-pic'); if (picEl) picEl.src = state.user.photo;
                 if (state.currentView === 'dashboard-view') renderLevelSelection();
                 if (state.currentView === 'roadmap-view') renderRoadmap();
                 if (state.currentView === 'profile-view') renderProfileProgress();
             }
-            lucide.createIcons();
+            try {
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            } catch (e) {
+                console.error('lucide.createIcons() error:', e);
+            }
+            // Ensure interactive controls have direct listeners when present
+            try { attachInteractiveHandlers(); } catch (e) { console.debug('attachInteractiveHandlers error', e); }
             // Persist app state after rendering so progress and login survive refresh
             try { saveAppState(); } catch (e) { console.error('persist error', e); }
         };
@@ -1639,8 +1771,9 @@ print(data_sorted)</code></pre>
                     // Call server logout to clear session cookie (best-effort)
                     try { await fetch('/logout', { method: 'POST', credentials: 'include' }); } catch(e) { console.debug('Server logout not available', e); }
 
-                    // Reset client state to defaults
+                    // Reset client state to guest defaults (show login landing with guest-continue)
                     state.loggedIn = false;
+                    state.isGuest = false;
                     state.currentView = 'login-view';
                     state.user = { name: 'Nama Kamu', quote: 'Semangat belajar jangan sampai padam!', photo: 'https://placehold.co/128x128/e2e8f0/64748b?text=Foto', tokens: 15, progress: {}, correctCount: {}, incorrectQuestions: {} };
                     // Reinitialize progress structure
@@ -1652,6 +1785,8 @@ print(data_sorted)</code></pre>
                         });
                     }
 
+                    // Clear any active warning timers when logging out
+                    try { clearLoginWarningTimer(); } catch (e) { console.debug('clear timer on logout', e); }
                     render();
                 } catch (err) {
                     console.error('Logout error:', err);
@@ -1669,67 +1804,110 @@ print(data_sorted)</code></pre>
         // Final initial render to apply loaded state
         render();
 
-        // Google Identity callback: called by Google's client when sign-in succeeds.
-        // Must be attached to window so the external Google script can call it (data-callback="handleCredentialResponse").
-        window.handleCredentialResponse = (response) => {
-            console.debug('handleCredentialResponse called with:', response);
-            try {
-                // response.credential contains the ID token (JWT) for Google's Identity Services
-                const idToken = response?.credential || response?.id_token || response;
-                if (!idToken) {
-                    console.warn('No credential received from Google Identity.');
-                    return;
-                }
+        // Google Sign-In is intentionally disabled in the main flow.
+        // Users proceed as guests; the app will remind them to login externally to persist progress securely.
 
-                // Simple JWT payload decode (no verification) to extract basic profile fields
-                const base64Url = idToken.split('.')[1] || '';
-                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-                }).join(''));
-                const payload = JSON.parse(jsonPayload);
-
-                // Try to notify server to create a session (if server is available)
-                const loginToServer = async (token) => {
-                    try {
-                        const resp = await fetch('/login', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            credentials: 'include',
-                            body: JSON.stringify({ idToken: token })
-                        });
-                        if (resp.ok) return await resp.json();
-                        return null;
-                    } catch (e) { return null; }
-                };
-
-                (async () => {
-                    const serverResp = await loginToServer(idToken);
-                    if (serverResp && serverResp.ok && serverResp.user) {
-                        state.user.name = serverResp.user.name || state.user.name;
-                        state.user.photo = serverResp.user.picture || serverResp.user.picture || state.user.photo;
-                    } else {
-                        // Fallback to client-side payload
-                        state.user.name = payload.name || payload.email || state.user.name;
-                        state.user.photo = payload.picture || state.user.photo;
-                    }
-
-                    state.loggedIn = true;
-                    state.currentView = 'dashboard-view';
-                    render();
-                })();
-            } catch (err) {
-                console.error('handleCredentialResponse error:', err);
+        // In-app banner: if user is not logged in, show a small persistent notice in the header area (rendered by render()).
+        // We'll also provide a small info modal that explains how to login separately.
+        const showExternalLoginInfo = () => {
+            const modalId = 'external-login-info';
+            let modal = document.getElementById(modalId);
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = modalId;
+                modal.className = 'fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50';
+                modal.innerHTML = `
+                    <div class="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl max-w-lg w-full">
+                        <h3 class="text-xl font-bold mb-2">Login Terpisah</h3>
+                        <p class="mb-4 text-sm text-secondary-dark dark:text-secondary-light">Login dengan Google dipisahkan dari alur utama untuk menghindari gangguan. Anda dapat login secara terpisah dari halaman akun untuk menyimpan progres ke server.</p>
+                        <div class="flex justify-end gap-2">
+                            <button id="login-now" class="px-4 py-2 rounded-md bg-primary text-white">Login Sekarang</button>
+                            <button id="close-external-info" class="px-4 py-2 rounded-md bg-slate-200 dark:bg-slate-700">Tutup</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                document.getElementById('close-external-info').addEventListener('click', () => modal.remove());
+                const _loginNow = document.getElementById('login-now');
+                if (_loginNow) _loginNow.addEventListener('click', () => {
+                    window.open('./auth.html', '_blank');
+                });
             }
         };
+    // Note: the external login 'Info' button was removed from the in-app warning.
 
-        // If any credentials were queued by the early stub, process them now.
-        if (window.__pendingGsiCredentials && window.__pendingGsiCredentials.length) {
-            try {
-                window.__pendingGsiCredentials.forEach(c => window.handleCredentialResponse(c));
-            } catch (e) { console.error('Error processing queued Google credentials:', e); }
-            window.__pendingGsiCredentials = [];
-        }
+    // Header 'Login with Google' button (opens auth.html)
+    const _headerLoginBtn = document.getElementById('login-with-google-btn');
+    if (_headerLoginBtn) _headerLoginBtn.addEventListener('click', () => window.open('./auth.html', '_blank'));
+
+    // Simple toast helper (creates a transient notification)
+    const showToast = (msg, {duration = 3500} = {}) => {
+        try {
+            const toast = document.createElement('div');
+            toast.className = 'px-4 py-2 rounded-lg bg-slate-800 text-white text-sm shadow-lg';
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 180ms ease, transform 220ms ease';
+            toast.style.transform = 'translateY(8px)';
+            toast.textContent = msg;
+            document.body.appendChild(toast);
+            // position
+            toast.style.position = 'fixed';
+            toast.style.right = '16px';
+            toast.style.bottom = '16px';
+            requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; });
+            setTimeout(() => {
+                toast.style.opacity = '0'; toast.style.transform = 'translateY(8px)';
+                setTimeout(() => toast.remove(), 240);
+            }, duration);
+        } catch (e) { console.error('showToast error', e); }
+    };
+
+    // Login warning auto-close / manual close support
+    function clearLoginWarningTimer() {
+        try { if (loginWarningTimer) { clearTimeout(loginWarningTimer); loginWarningTimer = null; } } catch(e) { console.debug('clearLoginWarningTimer', e); }
+    }
+    function hideLoginWarning() {
+        try {
+            const el = document.getElementById('login-warning');
+            if (el) el.classList.add('hidden');
+            clearLoginWarningTimer();
+        } catch(e) { console.error('hideLoginWarning error', e); }
+    }
+    function startLoginWarningTimer() {
+        clearLoginWarningTimer();
+        // auto-close after 5 seconds
+        console.debug('startLoginWarningTimer: starting 5s timer');
+        loginWarningTimer = setTimeout(() => {
+            console.debug('startLoginWarningTimer: timer fired — hiding warning');
+            hideLoginWarning();
+        }, 5000);
+    }
+
+    // Wire up manual close button for the login warning (if present)
+    const _loginWarnCloseBtn = document.getElementById('login-warning-close');
+    if (_loginWarnCloseBtn) {
+        console.debug('wiring login-warning-close button');
+        _loginWarnCloseBtn.addEventListener('click', (e) => {
+            console.debug('login-warning-close direct click');
+            e.preventDefault();
+            hideLoginWarning();
+        });
+    }
+
+    // Listen for auth changes written by auth.html in another tab/window.
+    // When auth.html writes to localStorage STORAGE_KEY, this tab receives a storage event.
+    window.addEventListener('storage', (ev) => {
+        try {
+            if (!ev.key) return;
+            if (ev.key === STORAGE_KEY) {
+                // reload persisted state and re-render
+                loadAppState();
+                render();
+                if (state.loggedIn) showToast('Anda berhasil masuk — progress akan disimpan ke cloud.');
+                else showToast('Status login diperbarui.');
+            }
+        } catch (e) { console.error('storage event handler error', e); }
+    });
 
         // Avatar dropdown toggle (accessible)
         const avatarBtn = document.getElementById('avatar-btn');
@@ -1751,7 +1929,8 @@ print(data_sorted)</code></pre>
             });
         }
         
-        document.getElementById('change-music').addEventListener('click', () => {
+    const _changeMusicBtn = document.getElementById('change-music');
+    if (_changeMusicBtn) _changeMusicBtn.addEventListener('click', () => {
             const linkInput = document.getElementById('music-link');
             let link = linkInput.value.trim();
             const feedbackEl = document.getElementById('music-feedback');
@@ -1803,7 +1982,71 @@ print(data_sorted)</code></pre>
             }, 3000);
         });
 
-        document.getElementById('toggle-music-player').addEventListener('click', () => document.getElementById('music-player-body').classList.toggle('hidden'));
+        // Delegated click handler: fallback if elements are re-created dynamically
+        document.addEventListener('click', (ev) => {
+            try {
+                const target = ev.target;
+                const loginBtn = target.closest && target.closest('#login-with-google-btn');
+                if (loginBtn) {
+                    console.debug('[delegated] login-with-google-btn clicked', loginBtn);
+                    ev.preventDefault();
+                    window.open('./auth.html', '_blank');
+                    return;
+                }
+                const warnClose = target.closest && target.closest('#login-warning-close');
+                if (warnClose) {
+                    console.debug('[delegated] login-warning-close clicked', warnClose);
+                    ev.preventDefault();
+                    hideLoginWarning();
+                    return;
+                }
+            } catch (e) { console.debug('delegated click handler error', e); }
+        });
+
+        // Capture-phase handler as last-resort to catch clicks even if other listeners stopPropagation
+        document.addEventListener('click', (ev) => {
+            // no-op here; reserved for future capture-phase logic if needed
+        }, true);
+
+        // Helper: attach direct listeners for interactive elements when they exist (idempotent)
+        function attachInteractiveHandlers() {
+            try {
+                // login-with-google-btn direct
+                const hdr = document.getElementById('login-with-google-btn');
+                if (hdr && !hdr.dataset._bound) {
+                    hdr.addEventListener('click', (e) => { e.preventDefault(); window.open('./auth.html', '_blank'); });
+                    hdr.dataset._bound = '1';
+                    console.debug('attachInteractiveHandlers: bound header login');
+                }
+
+                // toggle-music-player direct
+                const tbtn = document.getElementById('toggle-music-player');
+                if (tbtn && !tbtn.dataset._bound) {
+                    tbtn.addEventListener('click', (e) => { e.preventDefault(); const mpb = document.getElementById('music-player-body'); if (mpb) mpb.classList.toggle('hidden'); });
+                    tbtn.dataset._bound = '1';
+                    console.debug('attachInteractiveHandlers: bound toggle-music-player');
+                }
+
+                // login-warning-close direct (already bound earlier but ensure idempotency)
+                const cbtn = document.getElementById('login-warning-close');
+                if (cbtn && !cbtn.dataset._bound) {
+                    cbtn.addEventListener('click', (e) => { e.preventDefault(); hideLoginWarning(); });
+                    cbtn.dataset._bound = '1';
+                    console.debug('attachInteractiveHandlers: bound login-warning-close');
+                }
+            } catch (e) { console.debug('attachInteractiveHandlers failed', e); }
+        };
+
+        // Global fallback functions (called by inline onclick attributes)
+        window.globalToggleMusic = function() {
+            try { const mpb = document.getElementById('music-player-body'); if (mpb) mpb.classList.toggle('hidden'); } catch(e) { console.debug('globalToggleMusic error', e); }
+        };
+        window.globalLoginWithGoogle = function() {
+            try { window.open('./auth.html', '_blank'); } catch(e) { console.debug('globalLoginWithGoogle error', e); }
+        };
+        window.globalHideLoginWarning = function() {
+            try { hideLoginWarning(); } catch(e) { console.debug('globalHideLoginWarning error', e); }
+        };
         
         initializeProfileEditing();
         render(); // Initial render
