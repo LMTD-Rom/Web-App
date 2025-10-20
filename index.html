@@ -431,6 +431,43 @@
             theme: localStorage.getItem('theme') || 'dark',
         };
 
+        // Persistence helpers: save/load app state to localStorage so progress and login persist across refreshes
+        const STORAGE_KEY = 'pythonpath_app_state_v1';
+
+        const saveAppState = () => {
+            try {
+                const toStore = {
+                    loggedIn: state.loggedIn,
+                    currentView: state.currentView,
+                    user: state.user,
+                    learning: state.learning,
+                    theme: state.theme,
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
+            } catch (e) {
+                console.error('saveAppState error:', e);
+            }
+        };
+
+        const loadAppState = () => {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return;
+                const parsed = JSON.parse(raw);
+                if (parsed.user) state.user = Object.assign({}, state.user, parsed.user);
+                if (typeof parsed.loggedIn === 'boolean') state.loggedIn = parsed.loggedIn;
+                if (parsed.learning) state.learning = Object.assign({}, state.learning, parsed.learning);
+                if (parsed.theme) state.theme = parsed.theme;
+                if (parsed.currentView) state.currentView = parsed.currentView;
+            } catch (e) {
+                console.error('loadAppState error:', e);
+            }
+        };
+
+        const clearAppState = () => {
+            try { localStorage.removeItem(STORAGE_KEY); } catch(e) { console.error('clearAppState error', e); }
+        };
+
         const learningMaterials = {
             p_dasar: `
                 <h2 class="text-2xl font-bold mb-4">1. Variabel</h2>
@@ -1136,7 +1173,9 @@ print(data_sorted)</code></pre>
             });
         }
 
-        const contentViews = document.querySelectorAll('.content-view');
+    // Load persisted state (if any) before querying views and initial render
+    try { loadAppState(); } catch (e) { console.error('Initial loadAppState failed', e); }
+    const contentViews = document.querySelectorAll('.content-view');
         
         const render = () => {
             if (state.theme === 'dark') document.documentElement.classList.add('dark');
@@ -1157,6 +1196,8 @@ print(data_sorted)</code></pre>
                 if (state.currentView === 'profile-view') renderProfileProgress();
             }
             lucide.createIcons();
+            // Persist app state after rendering so progress and login survive refresh
+            try { saveAppState(); } catch (e) { console.error('persist error', e); }
         };
 
         const renderLevelSelection = () => {
@@ -1565,6 +1606,47 @@ print(data_sorted)</code></pre>
 
     const _themeToggle = document.getElementById('theme-toggle');
     if (_themeToggle) _themeToggle.addEventListener('click', () => { state.theme = state.theme === 'light' ? 'dark' : 'light'; localStorage.setItem('theme', state.theme); render(); });
+
+        // Logout handler
+        const _logoutBtn = document.getElementById('logout-button');
+        if (_logoutBtn) {
+            _logoutBtn.addEventListener('click', async () => {
+                try {
+                    // Clear persisted app state
+                    clearAppState();
+
+                    // Attempt Google sign-out if gapi or google accounts are available
+                    try {
+                        if (window.google && google.accounts && google.accounts.id) {
+                            // There's no direct signOut for ID token-only flows, but we can revoke the token if present
+                            // If you used server-side sessions, revoke on server. Here we try to revoke via accounts.oauth2 if possible.
+                            // Best-effort only; ignore any errors.
+                            console.debug('Attempting Google sign-out (best-effort)');
+                        }
+                    } catch (e) { console.debug('Google sign-out not available', e); }
+
+                    // Call server logout to clear session cookie (best-effort)
+                    try { await fetch('/logout', { method: 'POST', credentials: 'include' }); } catch(e) { console.debug('Server logout not available', e); }
+
+                    // Reset client state to defaults
+                    state.loggedIn = false;
+                    state.currentView = 'login-view';
+                    state.user = { name: 'Nama Kamu', quote: 'Semangat belajar jangan sampai padam!', photo: 'https://placehold.co/128x128/e2e8f0/64748b?text=Foto', tokens: 15, progress: {}, correctCount: {}, incorrectQuestions: {} };
+                    // Reinitialize progress structure
+                    for (const levelId in learningData) {
+                        learningData[levelId].modules.forEach(module => {
+                            state.user.progress[module.id] = 0;
+                            state.user.correctCount[module.id] = 0;
+                            state.user.incorrectQuestions[module.id] = [];
+                        });
+                    }
+
+                    render();
+                } catch (err) {
+                    console.error('Logout error:', err);
+                }
+            });
+        }
         // Accessibility: update aria-pressed and visual state for theme-toggle
         const themeBtn = document.getElementById('theme-toggle');
         const updateThemeBtn = () => {
@@ -1572,6 +1654,9 @@ print(data_sorted)</code></pre>
             themeBtn.setAttribute('aria-pressed', state.theme === 'dark' ? 'true' : 'false');
         };
         updateThemeBtn();
+
+        // Final initial render to apply loaded state
+        render();
 
         // Google Identity callback: called by Google's client when sign-in succeeds.
         // Must be attached to window so the external Google script can call it (data-callback="handleCredentialResponse").
@@ -1593,13 +1678,35 @@ print(data_sorted)</code></pre>
                 }).join(''));
                 const payload = JSON.parse(jsonPayload);
 
-                // Populate available user info (name, picture, email) and mark logged in
-                state.user.name = payload.name || payload.email || state.user.name;
-                state.user.photo = payload.picture || state.user.photo;
+                // Try to notify server to create a session (if server is available)
+                const loginToServer = async (token) => {
+                    try {
+                        const resp = await fetch('/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({ idToken: token })
+                        });
+                        if (resp.ok) return await resp.json();
+                        return null;
+                    } catch (e) { return null; }
+                };
 
-                state.loggedIn = true;
-                state.currentView = 'dashboard-view';
-                render();
+                (async () => {
+                    const serverResp = await loginToServer(idToken);
+                    if (serverResp && serverResp.ok && serverResp.user) {
+                        state.user.name = serverResp.user.name || state.user.name;
+                        state.user.photo = serverResp.user.picture || serverResp.user.picture || state.user.photo;
+                    } else {
+                        // Fallback to client-side payload
+                        state.user.name = payload.name || payload.email || state.user.name;
+                        state.user.photo = payload.picture || state.user.photo;
+                    }
+
+                    state.loggedIn = true;
+                    state.currentView = 'dashboard-view';
+                    render();
+                })();
             } catch (err) {
                 console.error('handleCredentialResponse error:', err);
             }
