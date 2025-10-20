@@ -8,6 +8,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // Early stub for Google Identity callback: in case Google fires the callback
+        // before the main script initializes (async/defer race), queue the response.
+        if (!window.handleCredentialResponse) {
+            window.__pendingGsiCredentials = window.__pendingGsiCredentials || [];
+            window.handleCredentialResponse = function(res) {
+                window.__pendingGsiCredentials.push(res);
+            };
+        }
+    </script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
         /* Custom scrollbar: transparent track, styled thumb for light & dark modes */
@@ -118,10 +129,20 @@
                 </div>
                 <h1 class="text-3xl font-extrabold text-text-light dark:text-text-dark">Selamat Datang!</h1>
                 <p class="text-secondary-dark dark:text-secondary-light">Masuk untuk memulai petualangan coding Python Anda di PythonPath.</p>
-                <button id="login-button" class="w-full flex items-center justify-center gap-3 px-4 py-3 font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-light ring-offset-background-light dark:ring-offset-background-dark shadow-lg shadow-primary/30 hover:shadow-xl hover:shadow-primary/40">
-                    <svg class="w-5 h-5" viewBox="0 0 48 48"><defs><path id="a" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/></defs><clipPath id="b"><use xlink:href="#a" overflow="visible"/></clipPath><path clip-path="url(#b)" fill="#FBBC05" d="M0 37V11l17 13z"/><path clip-path="url(#b)" fill="#EA4335" d="M0 11l17 13 7-6.1L48 14V0H0z"/><path clip-path="url(#b)" fill="#34A853" d="M0 37l30-23 7.9 1L48 0v48H0z"/><path clip-path="url(#b)" fill="#4285F4" d="M48 48L17 24l-4-3 35-10z"/></svg>
-                    Masuk dengan Google
-                </button>
+                             <div id="g_id_onload"
+                                 data-client_id="195220715967-oco8l37o9bfudqms8sudetekgoug6l8h.apps.googleusercontent.com"
+                                 data-callback="handleCredentialResponse"
+                                 data-ux_mode="popup"
+                                 data-auto_select="false">
+                </div>
+                             <div class="g_id_signin"
+                                 data-type="standard"
+                                 data-theme="outline"
+                                 data-text="sign_in_with"
+                                 data-shape="rectangular"
+                                 data-logo_alignment="left"
+                                 data-ux_mode="popup">
+                             </div>
             </div>
         </section>
 
@@ -219,6 +240,9 @@
                                 <input id="profile-name-input" class="hidden w-full max-w-xs text-3xl font-bold bg-slate-100 dark:bg-slate-700 rounded-md px-2 py-1 outline-none focus:ring-2 focus:ring-primary" type="text">
                                 <button id="edit-name-btn" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex-shrink-0">
                                     <i data-lucide="pencil" class="w-5 h-5"></i>
+                                </button>
+                                <button id="logout-button" title="Logout" class="p-2 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors flex-shrink-0 ml-4">
+                                    <i data-lucide="log-out" class="w-5 h-5"></i>
                                 </button>
                             </div>
                             <div class="flex items-center justify-center md:justify-start gap-3 mt-2">
@@ -1500,19 +1524,47 @@ print(data_sorted)</code></pre>
         };
 
         // Event Listeners Setup
-        document.getElementById('login-button').addEventListener('click', () => { state.loggedIn = true; state.currentView = 'dashboard-view'; render(); });
-        document.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); switchView(e.currentTarget.dataset.view); }));
-        document.getElementById('back-to-dashboard-from-roadmap').addEventListener('click', () => switchView('dashboard-view'));
-        document.getElementById('back-to-roadmap-from-material').addEventListener('click', () => switchView('roadmap-view'));
-        document.getElementById('back-to-roadmap').addEventListener('click', () => switchView('roadmap-view'));
-        document.getElementById('start-quiz-button').addEventListener('click', (e) => startModule(e.currentTarget.dataset.module));
-        document.getElementById('submit-answer').addEventListener('click', checkAnswer);
-        document.getElementById('next-question').addEventListener('click', goToNextQuestion);
-        document.getElementById('get-clue').addEventListener('click', showClue);
-        document.getElementById('back-to-roadmap-from-completion').addEventListener('click', () => switchView('roadmap-view'));
-        document.getElementById('remedial-button').addEventListener('click', startRemedialSession);
-        document.getElementById('photo-upload').addEventListener('change', (e) => { if (e.target.files[0]) { const reader = new FileReader(); reader.onload = (event) => { state.user.photo = event.target.result; render(); }; reader.readAsDataURL(e.target.files[0]); } });
-        document.getElementById('theme-toggle').addEventListener('click', () => { state.theme = state.theme === 'light' ? 'dark' : 'light'; localStorage.setItem('theme', state.theme); render(); });
+        const _loginBtn = document.getElementById('login-button');
+        if (_loginBtn) {
+            _loginBtn.addEventListener('click', () => { state.loggedIn = true; state.currentView = 'dashboard-view'; render(); });
+        } else {
+            // No manual login button present (we use Google Sign-In). Avoid uncaught errors.
+            console.debug('No #login-button found — Google Sign-In button is used instead.');
+        }
+    document.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); switchView(e.currentTarget.dataset.view); }));
+
+    const _backToDashboard = document.getElementById('back-to-dashboard-from-roadmap');
+    if (_backToDashboard) _backToDashboard.addEventListener('click', () => switchView('dashboard-view'));
+
+    const _backToMaterial = document.getElementById('back-to-roadmap-from-material');
+    if (_backToMaterial) _backToMaterial.addEventListener('click', () => switchView('roadmap-view'));
+
+    const _backToRoadmap = document.getElementById('back-to-roadmap');
+    if (_backToRoadmap) _backToRoadmap.addEventListener('click', () => switchView('roadmap-view'));
+
+    const _startQuizBtn = document.getElementById('start-quiz-button');
+    if (_startQuizBtn) _startQuizBtn.addEventListener('click', (e) => startModule(e.currentTarget.dataset.module));
+
+    const _submitAnswer = document.getElementById('submit-answer');
+    if (_submitAnswer) _submitAnswer.addEventListener('click', checkAnswer);
+
+    const _nextQuestion = document.getElementById('next-question');
+    if (_nextQuestion) _nextQuestion.addEventListener('click', goToNextQuestion);
+
+    const _getClue = document.getElementById('get-clue');
+    if (_getClue) _getClue.addEventListener('click', showClue);
+
+    const _backFromCompletion = document.getElementById('back-to-roadmap-from-completion');
+    if (_backFromCompletion) _backFromCompletion.addEventListener('click', () => switchView('roadmap-view'));
+
+    const _remedialBtn = document.getElementById('remedial-button');
+    if (_remedialBtn) _remedialBtn.addEventListener('click', startRemedialSession);
+
+    const _photoUpload = document.getElementById('photo-upload');
+    if (_photoUpload) _photoUpload.addEventListener('change', (e) => { if (e.target.files[0]) { const reader = new FileReader(); reader.onload = (event) => { state.user.photo = event.target.result; render(); }; reader.readAsDataURL(e.target.files[0]); } });
+
+    const _themeToggle = document.getElementById('theme-toggle');
+    if (_themeToggle) _themeToggle.addEventListener('click', () => { state.theme = state.theme === 'light' ? 'dark' : 'light'; localStorage.setItem('theme', state.theme); render(); });
         // Accessibility: update aria-pressed and visual state for theme-toggle
         const themeBtn = document.getElementById('theme-toggle');
         const updateThemeBtn = () => {
@@ -1520,6 +1572,46 @@ print(data_sorted)</code></pre>
             themeBtn.setAttribute('aria-pressed', state.theme === 'dark' ? 'true' : 'false');
         };
         updateThemeBtn();
+
+        // Google Identity callback: called by Google's client when sign-in succeeds.
+        // Must be attached to window so the external Google script can call it (data-callback="handleCredentialResponse").
+        window.handleCredentialResponse = (response) => {
+            console.debug('handleCredentialResponse called with:', response);
+            try {
+                // response.credential contains the ID token (JWT) for Google's Identity Services
+                const idToken = response?.credential || response?.id_token || response;
+                if (!idToken) {
+                    console.warn('No credential received from Google Identity.');
+                    return;
+                }
+
+                // Simple JWT payload decode (no verification) to extract basic profile fields
+                const base64Url = idToken.split('.')[1] || '';
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                const payload = JSON.parse(jsonPayload);
+
+                // Populate available user info (name, picture, email) and mark logged in
+                state.user.name = payload.name || payload.email || state.user.name;
+                state.user.photo = payload.picture || state.user.photo;
+
+                state.loggedIn = true;
+                state.currentView = 'dashboard-view';
+                render();
+            } catch (err) {
+                console.error('handleCredentialResponse error:', err);
+            }
+        };
+
+        // If any credentials were queued by the early stub, process them now.
+        if (window.__pendingGsiCredentials && window.__pendingGsiCredentials.length) {
+            try {
+                window.__pendingGsiCredentials.forEach(c => window.handleCredentialResponse(c));
+            } catch (e) { console.error('Error processing queued Google credentials:', e); }
+            window.__pendingGsiCredentials = [];
+        }
 
         // Avatar dropdown toggle (accessible)
         const avatarBtn = document.getElementById('avatar-btn');
