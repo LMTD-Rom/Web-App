@@ -1415,8 +1415,19 @@ print(data_sorted)</code></pre>
                     li.className = 'mc-option flex items-center p-3 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-primary/10 hover:border-primary';
                     li.addEventListener('click', () => {
                         if (document.getElementById('submit-answer').disabled) return;
-                        optionsList.querySelectorAll('li').forEach(item => item.classList.remove('selected'));
-                        li.classList.add('selected');
+                        // Clear selection visuals from all options
+                        optionsList.querySelectorAll('li').forEach(item => {
+                            item.classList.remove('selected', '!bg-primary', '!text-white', 'bg-primary/10', 'border-primary');
+                            const badge = item.querySelector('.selected-badge');
+                            if (badge) badge.remove();
+                        });
+
+                        // Add visible selection styles to the clicked item
+                        li.classList.add('selected', 'bg-primary/10', 'border-primary');
+                        const badge = document.createElement('span');
+                        badge.className = 'selected-badge ml-auto text-xs font-semibold text-primary';
+                        badge.textContent = 'Dipilih';
+                        li.appendChild(badge);
                         state.learning.selectedAnswerIndex = index;
                     });
                     optionsList.appendChild(li);
