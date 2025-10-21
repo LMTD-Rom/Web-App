@@ -23,7 +23,10 @@
         // These are defensive wrappers that operate directly on DOM so
         // clicks won't throw ReferenceError if the main script hasn't
         // attached its internal helpers yet.
-        (function () {
+    // Ensure a global timer slot exists so helper functions can clear/start safely
+    window.__loginWarningTimer = window.__loginWarningTimer || null;
+
+    (function () {
             function hideLoginWarningImpl() {
                 try {
                     const el = document.getElementById('login-warning');
@@ -155,6 +158,83 @@
         @keyframes cardPop {
             to { transform: translateY(0) scale(1); opacity: 1; }
         }
+        /* Micro-interaction for multiple-choice options */
+        .mc-option {
+            transition: transform 140ms ease, box-shadow 160ms ease, background-color 160ms ease, border-color 160ms ease;
+        }
+        .mc-option:active { transform: translateY(1px) scale(0.998); }
+        .mc-option.selected {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(79,70,229,0.08);
+        }
+
+        /* Confetti simple animation (small bursts) */
+        .confetti-piece {
+            position: absolute;
+            width: 8px; height: 8px; border-radius: 2px; opacity: 0; transform-origin: center;
+            animation: confetti 900ms ease-out forwards;
+        }
+        @keyframes confetti {
+            0% { opacity: 1; transform: translateY(0) rotate(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-140px) rotate(720deg) scale(0.9); }
+        }
+
+        /* Streak badge */
+        .streak-badge {
+            display: inline-flex; align-items: center; gap: 6px; padding: 0.35rem 0.5rem; border-radius: 9999px;
+            background: linear-gradient(180deg, rgba(253,230,138,0.18), rgba(253,230,138,0.08)); color: #b45309; font-weight: 600;
+        }
+        html.dark .streak-badge { background: linear-gradient(180deg, rgba(245,158,11,0.12), rgba(245,158,11,0.06)); color: #fcd34d; }
+    </style>
+    <style>
+        /* Subtle animated gradient background applied across the site.
+           Implemented as a fixed layer behind #app so it doesn't interfere with layout.
+           Respects prefers-reduced-motion for accessibility. */
+        #animated-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            /* subtle, desaturated gradient used as background texture only */
+            background: linear-gradient(120deg, rgba(79,70,229,0.08), rgba(236,72,153,0.06), rgba(16,185,129,0.04));
+            background-size: 300% 300%;
+            /* keep it as a soft blurred layer so it doesn't tint cards */
+            filter: blur(18px) saturate(0.9) opacity(0.6);
+            /* remove blend mode so elements maintain their original colors */
+            mix-blend-mode: normal;
+            will-change: background-position;
+            transform: translateZ(0);
+        }
+
+        @keyframes animatedGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @media (prefers-reduced-motion: no-preference) {
+            #animated-bg { animation: animatedGradient 12s linear infinite; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            #animated-bg { animation: none; }
+        }
+    </style>
+    <style>
+        /* Ensure the app content sits above the animated background so cards keep their original colors */
+        #app { position: relative; z-index: 10; }
+    </style>
+    <style>
+        /* View transition animations */
+        .view-enter { animation: viewEnter 420ms cubic-bezier(.2,.9,.2,1) forwards; }
+        .view-leave { animation: viewLeave 300ms cubic-bezier(.2,.9,.2,1) forwards; }
+        @keyframes viewEnter {
+            from { opacity: 0; transform: translateY(10px) scale(0.995); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes viewLeave {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(-6px) scale(0.998); }
+        }
     </style>
     <script>
         // Konfigurasi warna custom untuk Tailwind CSS
@@ -175,6 +255,8 @@
     </script>
 </head>
 <body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark transition-colors duration-300">
+    <!-- Animated background layer -->
+    <div id="animated-bg" aria-hidden="true"></div>
     <a href="#content-container" class="skip-link">Skip to content</a>
 
     <!-- Container Utama -->
@@ -238,6 +320,12 @@
                             <i data-lucide="gem" class="w-4 h-4"></i>
                             <span id="token-count">15</span>
                         </div>
+                        <div id="streak-badge-container" class="ml-2 hidden">
+                            <div id="streak-badge" class="streak-badge">
+                                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                <span id="streak-count">0</span>
+                            </div>
+                        </div>
                         <button id="theme-toggle" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                             <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
                             <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
@@ -267,6 +355,27 @@
                     </div>
                     <h1 class="text-4xl font-extrabold text-center mb-4">Pilih Level Belajar Anda</h1>
                     <p class="text-slate-500 dark:text-slate-400 mb-12 text-center max-w-2xl mx-auto">Setiap level dirancang untuk membangun pemahaman Anda secara bertahap, dari dasar hingga menjadi seorang developer handal.</p>
+                    <div class="max-w-3xl mx-auto mb-8">
+                        <!-- Featured challenge: keeps the dashboard from feeling empty -->
+                        <div id="featured-challenge" class="p-6 rounded-2xl bg-gradient-to-r from-primary/10 to-surface-light dark:from-primary/10 dark:to-surface-dark shadow-lg card-pop">
+                            <div class="flex items-start gap-4">
+                                <div class="flex-shrink-0">
+                                    <div class="w-14 h-14 rounded-lg bg-primary/20 dark:bg-primary/30 flex items-center justify-center">
+                                        <i data-lucide="zap" class="w-7 h-7 text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-bold">Tantangan Hari Ini</h3>
+                                    <p id="featured-teaser" class="text-sm text-secondary-dark dark:text-secondary-light mt-1">Memuat tantangan...</p>
+                                    <div class="mt-4 flex items-center gap-3">
+                                        <button id="start-featured" class="px-4 py-2 bg-primary text-white rounded-lg font-semibold hover:bg-primary-dark transition-colors">Mulai Tantangan</button>
+                                        <button id="skip-featured" class="px-3 py-2 border rounded-lg bg-transparent text-sm text-secondary-dark dark:text-secondary-light hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Lewati</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="level-selection-container" class="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <!-- Level cards will be populated by JS -->
                     </div>
@@ -369,11 +478,13 @@
                         <i data-lucide="arrow-left" class="w-4 h-4"></i> Kembali ke Roadmap
                     </button>
                     <div class="bg-surface-light dark:bg-surface-dark p-6 sm:p-8 rounded-2xl shadow-lg">
-                        <div class="flex justify-between items-center mb-4">
-                             <h2 id="learning-title" class="text-lg font-semibold">Soal #<span id="question-number">1</span></h2>
-                             <p id="question-counter" class="text-sm text-secondary-dark dark:text-secondary-light">1 / 35</p>
-                        </div>
-                        <p id="question-text" class="mb-6 text-base leading-relaxed">Soal akan dimuat di sini...</p>
+                    <div class="grid grid-cols-1 gap-6">
+                        <div>
+                           <div class="flex justify-between items-center mb-4">
+                               <h2 id="learning-title" class="text-lg font-semibold">Soal #<span id="question-number">1</span></h2>
+                               <p id="question-counter" class="text-sm text-secondary-dark dark:text-secondary-light">1 / 35</p>
+                           </div>
+                           <p id="question-text" class="mb-6 text-base leading-relaxed">Soal akan dimuat di sini...</p>
                         <div id="clue-container" class="hidden mb-4 p-4 bg-yellow-100 dark:bg-yellow-900/50 border-l-4 border-yellow-400 text-yellow-800 dark:text-yellow-300 rounded-r-lg">
                             <p class="font-bold">Clue:</p>
                             <p id="clue-text" class="text-sm">Clue akan muncul di sini.</p>
@@ -381,7 +492,7 @@
                         <div id="feedback-container" class="hidden mb-4 p-4 rounded-lg">
                             <div id="feedback-text" class="font-medium"></div>
                         </div>
-                        <div id="answer-area" class="mb-6">
+                                <div id="answer-area" class="mb-6">
                             <div id="fill-in-container" class="hidden bg-slate-100 dark:bg-slate-900 rounded-lg p-4">
                                <textarea id="code-answer" rows="3" class="w-full bg-transparent text-text-light dark:text-text-dark font-mono text-sm outline-none resize-none" placeholder="Tulis jawabanmu di sini..."></textarea>
                             </div>
@@ -389,7 +500,7 @@
                                 <ul id="mc-options-list" class="space-y-3"></ul>
                             </div>
                         </div>
-                        <div class="mt-6 flex flex-col sm:flex-row gap-4">
+                            <div class="mt-6 flex flex-col sm:flex-row gap-4">
                             <button id="submit-answer" class="w-full sm:w-auto flex-1 px-6 py-3 font-semibold text-white bg-primary rounded-lg hover:bg-primary-dark transition-all duration-200">Kirim Jawaban</button>
                             <button id="get-clue" class="w-full sm:w-auto px-6 py-3 flex items-center justify-center gap-2 font-semibold text-primary border border-primary rounded-lg hover:bg-primary/10 transition-all duration-200">
                                 <i data-lucide="lightbulb" class="w-4 h-4"></i> Buka Clue (1 <i data-lucide="gem" class="w-4 h-4 inline-block"></i>)
@@ -397,8 +508,12 @@
                             <button id="next-question" class="hidden w-full sm:w-auto flex-1 px-6 py-3 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-all duration-200">
                                 Lanjut <i data-lucide="arrow-right" class="w-4 h-4 inline-block ml-2"></i>
                             </button>
+                            </div>
                         </div>
+
+                        <!-- Right column removed: simplified learning view per user request -->
                     </div>
+                </div>
                 </section>
                 
                 <!-- Selesai Level View -->
@@ -505,6 +620,8 @@
                 quote: 'Semangat belajar jangan sampai padam!',
                 photo: 'https://placehold.co/128x128/e2e8f0/64748b?text=Foto',
                 tokens: 15,
+                streak: 0,
+                lastStreakDate: null,
                 progress: {}, correctCount: {}, incorrectQuestions: {},
             },
             learning: { level: null, module: null, selectedAnswerIndex: null, mode: 'normal' },
@@ -1312,6 +1429,17 @@ print(data_sorted)</code></pre>
                     link.classList.toggle('nav-link-active', link.dataset.view === state.currentView);
                 });
                 const tokenCountEl = document.getElementById('token-count'); if (tokenCountEl) tokenCountEl.textContent = state.user.tokens;
+                // Streak badge
+                const streakContainer = document.getElementById('streak-badge-container');
+                const streakCountEl = document.getElementById('streak-count');
+                if (streakContainer && streakCountEl) {
+                    if (state.user.streak && state.user.streak > 0) {
+                        streakCountEl.textContent = state.user.streak;
+                        streakContainer.classList.remove('hidden');
+                    } else {
+                        streakContainer.classList.add('hidden');
+                    }
+                }
                 const nameEl = document.getElementById('profile-name-display'); if (nameEl) nameEl.textContent = state.user.name;
                 const quoteEl = document.getElementById('profile-quote-display'); if (quoteEl) quoteEl.textContent = `"${state.user.quote}"`;
                 const picEl = document.getElementById('profile-pic'); if (picEl) picEl.src = state.user.photo;
@@ -1359,7 +1487,7 @@ print(data_sorted)</code></pre>
         
         const showRoadmap = (levelId) => {
             state.learning.level = levelId;
-            switchView('roadmap-view');
+            performViewTransition('roadmap-view');
         };
 
         const renderRoadmap = () => {
@@ -1403,25 +1531,35 @@ print(data_sorted)</code></pre>
         const renderProfileProgress = () => {
             const container = document.getElementById('profile-progress-container');
             container.innerHTML = '';
+
+            // Create a two-column layout: left = progress grid grouped by level, right = user summary & recent activity
+            const layout = document.createElement('div');
+            layout.className = 'grid grid-cols-1 lg:grid-cols-3 gap-8';
+
+            // Left/main column (spans 2 on large screens)
+            const leftCol = document.createElement('div');
+            leftCol.className = 'lg:col-span-2 space-y-10';
+
             for (const levelId in learningData) {
                 const level = learningData[levelId];
                 const levelDiv = document.createElement('div');
-                
+                levelDiv.className = 'bg-transparent';
+
                 let modulesHTML = '';
                 level.modules.forEach(module => {
                     const percentage = (state.user.correctCount[module.id] / TOTAL_QUESTIONS_PER_MODULE) * 100;
-                    const radius = 50;
+                    const radius = 40;
                     const circumference = 2 * Math.PI * radius;
                     const offset = circumference - (percentage / 100) * circumference;
 
                     modulesHTML += `
                     <div class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-md flex flex-col items-center text-center">
-                        <div class="relative w-28 h-28 mb-3">
+                        <div class="relative w-24 h-24 mb-3">
                             <svg class="w-full h-full" viewBox="0 0 120 120">
-                                <circle class="text-slate-200 dark:text-slate-700" stroke-width="10" stroke="currentColor" fill="transparent" r="${radius}" cx="60" cy="60"/>
+                                <circle class="text-slate-200 dark:text-slate-700" stroke-width="8" stroke="currentColor" fill="transparent" r="${radius}" cx="60" cy="60"/>
                                 <circle
                                     class="text-${module.color}-500"
-                                    stroke-width="10"
+                                    stroke-width="8"
                                     stroke-dasharray="${circumference}"
                                     stroke-dashoffset="${offset}"
                                     stroke-linecap="round"
@@ -1435,32 +1573,122 @@ print(data_sorted)</code></pre>
                                 />
                             </svg>
                             <div class="absolute inset-0 flex flex-col items-center justify-center">
-                                <span class="text-2xl font-bold">${Math.round(percentage)}%</span>
+                                <span class="text-xl font-bold">${Math.round(percentage)}%</span>
+                                <span class="text-xs text-secondary-dark dark:text-secondary-light">${state.user.correctCount[module.id]} / ${TOTAL_QUESTIONS_PER_MODULE}</span>
                             </div>
                         </div>
                         <p class="font-semibold text-sm">${module.title}</p>
-                        <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">${state.user.correctCount[module.id]} / ${TOTAL_QUESTIONS_PER_MODULE} soal</p>
-                        <div class="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2">
-                            <div class="bg-${module.color}-500 h-2 rounded-full" style="width: ${percentage}%"></div>
-                        </div>
                     </div>
                     `;
                 });
 
                 levelDiv.innerHTML = `
-                    <h2 class="text-2xl font-bold mb-6 text-center md:text-left text-${level.color}-500">${level.title}</h2>
-                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
+                    <div class="p-4 rounded-lg">
+                      <h2 class="text-2xl font-bold mb-4 text-${level.color}-500">${level.title}</h2>
+                      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                         ${modulesHTML}
+                      </div>
                     </div>
                 `;
-                container.appendChild(levelDiv);
+                leftCol.appendChild(levelDiv);
+            }
+
+            // Right column: user summary & recent activity
+            const rightCol = document.createElement('aside');
+            rightCol.className = 'space-y-6';
+            rightCol.innerHTML = `
+                <div class="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-lg sticky top-24">
+                    <div class="flex items-center gap-4">
+                        <img id="profile-pic-compact" src="${state.user.photo}" alt="Foto" class="w-16 h-16 rounded-full object-cover ring-2 ring-primary/40">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-lg font-bold">${state.user.name}</h3>
+                                <div class="ml-2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-semibold">
+                                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                    <span id="profile-streak-small">${state.user.streak || 0}</span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-secondary-dark dark:text-secondary-light mt-1 italic">${state.user.quote}</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 grid grid-cols-3 gap-3 text-center">
+                        <div>
+                            <div class="text-2xl font-bold">${state.user.tokens}</div>
+                            <div class="text-xs text-secondary-dark dark:text-secondary-light">Token</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold">${Object.values(state.user.correctCount).reduce((a,b)=>a+b,0)}</div>
+                            <div class="text-xs text-secondary-dark dark:text-secondary-light">Benar</div>
+                        </div>
+                        <div>
+                            <div class="text-2xl font-bold">${Object.values(state.user.incorrectQuestions).reduce((a,b)=>a+b.length,0)}</div>
+                            <div class="text-xs text-secondary-dark dark:text-secondary-light">Perlu Latihan</div>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex flex-col gap-2">
+                        <button id="continue-learning-btn" class="w-full px-4 py-2 bg-primary text-white rounded-lg font-semibold">Lanjut Belajar</button>
+                    </div>
+                </div>
+                <div class="bg-surface-light dark:bg-surface-dark p-4 rounded-2xl shadow-lg">
+                    <h4 class="font-semibold mb-3">Aktivitas Terakhir</h4>
+                    <ul id="recent-activity-list" class="space-y-2 text-sm text-secondary-dark dark:text-secondary-light">
+                        <!-- Filled by JS -->
+                    </ul>
+                </div>
+            `;
+
+            layout.appendChild(leftCol);
+            layout.appendChild(rightCol);
+            container.appendChild(layout);
+
+            // Wire quick interactions
+            const continueBtn = document.getElementById('continue-learning-btn');
+            if (continueBtn) continueBtn.addEventListener('click', () => {
+                // prefer resuming last module if any
+                if (state.learning.module) startModule(state.learning.module);
+                else performViewTransition('dashboard-view');
+            });
+
+            // Populate recent activity list with a lightweight summary
+            const activityList = document.getElementById('recent-activity-list');
+            if (activityList) {
+                const activities = [];
+                for (const lvl in learningData) {
+                    learningData[lvl].modules.forEach(m => {
+                        const correct = state.user.correctCount[m.id] || 0;
+                        if (correct > 0) activities.push({text: `${m.title}: ${correct} benar`, time: Math.random()});
+                    });
+                }
+                if (activities.length === 0) {
+                    activityList.innerHTML = '<li class="text-xs">Belum ada aktivitas. Mulai kuis untuk melihat progress di sini.</li>';
+                } else {
+                    activities.slice(-8).reverse().forEach(a => {
+                        const li = document.createElement('li');
+                        li.className = 'flex items-center justify-between';
+                        li.innerHTML = `<span>${a.text}</span><span class="text-xs text-secondary-dark dark:text-secondary-light">baru-baru ini</span>`;
+                        activityList.appendChild(li);
+                    });
+                }
             }
         };
 
 
-        const switchView = (viewId) => {
-            state.currentView = viewId;
-            render();
+        // Smooth view transition: animate leave on current, then enter new view
+        const performViewTransition = (viewId) => {
+            const current = document.querySelector('.content-view:not(.hidden)');
+            const next = document.getElementById(viewId);
+            if (!next) { state.currentView = viewId; render(); return; }
+            const doSwitch = () => { state.currentView = viewId; render();
+                // add enter animation to the newly shown view
+                const shown = document.getElementById(viewId);
+                if (shown) { shown.classList.add('view-enter'); setTimeout(() => shown.classList.remove('view-enter'), 600); }
+            };
+            if (current) {
+                current.classList.add('view-leave');
+                setTimeout(() => { current.classList.remove('view-leave'); doSwitch(); }, 280);
+            } else {
+                doSwitch();
+            }
         };
         
         const showMaterial = (moduleId) => {
@@ -1472,33 +1700,55 @@ print(data_sorted)</code></pre>
             materialContentEl.innerHTML = learningMaterials[moduleId] || '<p>Materi untuk modul ini belum tersedia.</p>';
             
             document.getElementById('start-quiz-button').dataset.module = moduleId;
-            switchView('material-view');
+            performViewTransition('material-view');
         };
 
         const startModule = (moduleId) => {
             state.learning.module = moduleId;
             state.learning.mode = 'normal';
-            switchView('learning-view');
+            performViewTransition('learning-view');
             loadQuestion();
         };
 
         const startRemedialSession = () => {
             state.learning.mode = 'remedial';
-            switchView('learning-view');
+            performViewTransition('learning-view');
             loadQuestion();
         };
 
         const showCompletionScreen = () => {
-            switchView('completion-view');
+            performViewTransition('completion-view');
             const { module, level } = state.learning;
             const moduleData = learningData[level].modules.find(m => m.id === module);
-            document.getElementById('completion-message').textContent = `Anda telah menyelesaikan semua soal di modul "${moduleData.title}". Hebat!`;
+            if (state.learning.mode === 'challenge') {
+                document.getElementById('completion-message').textContent = `Selamat! Anda menyelesaikan Tantangan.`;
+                // cleanup temporary challenge markers
+                delete state.user._challengeProgress;
+                delete state.learning.challengeSize;
+                state.learning.mode = 'normal';
+            } else {
+                document.getElementById('completion-message').textContent = `Anda telah menyelesaikan semua soal di modul "${moduleData.title}". Hebat!`;
+            }
             const remedialButton = document.getElementById('remedial-button');
             if (state.user.incorrectQuestions[module].length === 0) {
                 remedialButton.classList.add('hidden');
             } else {
                 remedialButton.classList.remove('hidden');
             }
+            // Reward and celebration
+            try {
+                if (state.learning.mode === 'challenge') {
+                    // small reward for finishing challenge
+                    state.user.tokens += 2;
+                    showToast('+2 token untuk menyelesaikan Tantangan!');
+                    fireConfetti(28);
+                } else {
+                    // reward small bonus for completing a module: +3 tokens
+                    state.user.tokens += 3;
+                    showToast('Module selesai! +3 token');
+                    fireConfetti(36);
+                }
+            } catch(e) { console.debug('completion reward error', e); }
         };
         
         const loadQuestion = () => {
@@ -1510,6 +1760,13 @@ print(data_sorted)</code></pre>
                 totalQuestions = state.user.incorrectQuestions[module].length;
                 if (totalQuestions === 0) { showCompletionScreen(); return; }
                 currentQuestion = state.user.incorrectQuestions[module][0];
+            } else if (mode === 'challenge') {
+                // challenge mode uses a temporary pointer and size
+                const size = state.learning.challengeSize || 5;
+                currentIndex = state.user._challengeProgress || 0;
+                totalQuestions = Math.min(size, (questions[module] || []).length);
+                if (currentIndex >= totalQuestions) { showCompletionScreen(); return; }
+                currentQuestion = questions[module][currentIndex];
             } else {
                 currentIndex = state.user.progress[module];
                 totalQuestions = questions[module].length;
@@ -1565,11 +1822,23 @@ print(data_sorted)</code></pre>
                     optionsList.appendChild(li);
                 });
             }
+
+                // Question detail panel removed per user preference (kept intentionally empty to avoid console noise)
         };
 
         const checkAnswer = () => {
             const { module, mode, selectedAnswerIndex } = state.learning;
-            let currentQuestion = mode === 'remedial' ? state.user.incorrectQuestions[module][0] : questions[module][state.user.progress[module]];
+            // Resolve the displayed current question consistently with loadQuestion logic
+            let currentQuestion;
+            if (mode === 'remedial') {
+                currentQuestion = state.user.incorrectQuestions[module] && state.user.incorrectQuestions[module][0];
+            } else if (mode === 'challenge') {
+                const idx = state.user._challengeProgress || 0;
+                currentQuestion = (questions[module] && questions[module][idx]);
+            } else {
+                const idx = state.user.progress[module] || 0;
+                currentQuestion = (questions[module] && questions[module][idx]);
+            }
             let isCorrect = false;
             const feedbackContainer = document.getElementById('feedback-container');
             const feedbackText = document.getElementById('feedback-text');
@@ -1612,7 +1881,37 @@ print(data_sorted)</code></pre>
                     if (state.user.correctCount[module] > 0 && state.user.correctCount[module] % tokenRules[state.learning.level] === 0) {
                         state.user.tokens++;
                     }
+                    // streak handling: increment streak for consecutive correct answers
+                    try {
+                        const today = new Date().toISOString().slice(0,10);
+                        if (state.user.lastStreakDate === today) {
+                            state.user.streak = (state.user.streak || 0) + 1;
+                        } else {
+                            // If lastStreakDate is yesterday, continue streak; otherwise reset and start new streak
+                            if (state.user.lastStreakDate) {
+                                const last = new Date(state.user.lastStreakDate);
+                                const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+                                if (last.toISOString().slice(0,10) === yesterday.toISOString().slice(0,10)) {
+                                    state.user.streak = (state.user.streak || 0) + 1;
+                                } else {
+                                    state.user.streak = 1;
+                                }
+                            } else {
+                                state.user.streak = 1;
+                            }
+                            state.user.lastStreakDate = today;
+                        }
+                        // reward token at streak milestones (every 3 corrects)
+                        if (state.user.streak > 0 && state.user.streak % 3 === 0) {
+                            state.user.tokens += 1;
+                            showToast(`Streak ${state.user.streak}! +1 token`);
+                            // small confetti burst for milestone
+                            try { fireConfetti(14); } catch(e) { console.debug('confetti error', e); }
+                        }
+                    } catch(e) { console.debug('streak update error', e); }
                 } else { state.user.incorrectQuestions[module].shift(); }
+                // confetti for correct answer micro-burst
+                try { fireConfetti(6); } catch(e) { console.debug('confetti micro error', e); }
             } else {
                 if (currentQuestion.type === 'multiple-choice') {
                     document.querySelectorAll('#mc-options-list li').forEach(li => {
@@ -1630,12 +1929,17 @@ print(data_sorted)</code></pre>
                 } else if (mode === 'remedial') {
                     state.user.incorrectQuestions[module].push(state.user.incorrectQuestions[module].shift());
                 }
+                // reset streak on incorrect
+                try { state.user.streak = 0; } catch(e) { console.debug('reset streak error', e); }
             }
              lucide.createIcons();
         };
 
         const goToNextQuestion = () => {
             if (state.learning.mode === 'normal') state.user.progress[state.learning.module]++;
+            else if (state.learning.mode === 'challenge') {
+                state.user._challengeProgress = (state.user._challengeProgress || 0) + 1;
+            }
             loadQuestion();
             render();
         }
@@ -1715,16 +2019,16 @@ print(data_sorted)</code></pre>
             // No manual login button present (we use Google Sign-In). Avoid uncaught errors.
             console.debug('No #login-button found — Google Sign-In button is used instead.');
         }
-    document.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); switchView(e.currentTarget.dataset.view); }));
+    document.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', (e) => { e.preventDefault(); performViewTransition(e.currentTarget.dataset.view); }));
 
     const _backToDashboard = document.getElementById('back-to-dashboard-from-roadmap');
-    if (_backToDashboard) _backToDashboard.addEventListener('click', () => switchView('dashboard-view'));
+    if (_backToDashboard) _backToDashboard.addEventListener('click', () => performViewTransition('dashboard-view'));
 
     const _backToMaterial = document.getElementById('back-to-roadmap-from-material');
-    if (_backToMaterial) _backToMaterial.addEventListener('click', () => switchView('roadmap-view'));
+    if (_backToMaterial) _backToMaterial.addEventListener('click', () => performViewTransition('roadmap-view'));
 
     const _backToRoadmap = document.getElementById('back-to-roadmap');
-    if (_backToRoadmap) _backToRoadmap.addEventListener('click', () => switchView('roadmap-view'));
+    if (_backToRoadmap) _backToRoadmap.addEventListener('click', () => performViewTransition('roadmap-view'));
 
     const _startQuizBtn = document.getElementById('start-quiz-button');
     if (_startQuizBtn) _startQuizBtn.addEventListener('click', (e) => startModule(e.currentTarget.dataset.module));
@@ -1739,7 +2043,7 @@ print(data_sorted)</code></pre>
     if (_getClue) _getClue.addEventListener('click', showClue);
 
     const _backFromCompletion = document.getElementById('back-to-roadmap-from-completion');
-    if (_backFromCompletion) _backFromCompletion.addEventListener('click', () => switchView('roadmap-view'));
+    if (_backFromCompletion) _backFromCompletion.addEventListener('click', () => performViewTransition('roadmap-view'));
 
     const _remedialBtn = document.getElementById('remedial-button');
     if (_remedialBtn) _remedialBtn.addEventListener('click', startRemedialSession);
@@ -1804,6 +2108,82 @@ print(data_sorted)</code></pre>
         // Final initial render to apply loaded state
         render();
 
+            // --- Featured Challenge widget logic ---
+            (function setupFeaturedChallenge(){
+                try {
+                    const featuredEl = document.getElementById('featured-challenge');
+                    const teaserEl = document.getElementById('featured-teaser');
+                    const startBtn = document.getElementById('start-featured');
+                    const skipBtn = document.getElementById('skip-featured');
+                    if (!featuredEl || !teaserEl || !startBtn) return;
+
+                    // Pick a module prioritizing low-progress modules to encourage practice
+                    const levelKeys = Object.keys(learningData);
+                    // Flatten modules with level key and progress metric
+                    const flat = [];
+                    levelKeys.forEach(lk => {
+                        learningData[lk].modules.forEach(m => {
+                            const prog = (state.user.correctCount && state.user.correctCount[m.id]) || 0;
+                            flat.push({ level: lk, module: m, progress: prog });
+                        });
+                    });
+                    // sort ascending by progress (less progress first)
+                    flat.sort((a,b) => a.progress - b.progress);
+                    const pick = flat[Math.floor(Math.random() * Math.min(6, flat.length))] || flat[0];
+                    const randomLevel = pick.level;
+                    const randomModule = pick.module;
+                    const qpool = questions[randomModule.id] || [];
+                    const teaserQuestion = qpool.length ? qpool[Math.floor(Math.random() * Math.min(qpool.length, 10))] : null;
+
+                    if (teaserQuestion) {
+                        let teaserText = teaserQuestion.text.split('\n')[0];
+                        if (teaserText.length > 120) teaserText = teaserText.slice(0, 117) + '...';
+                        teaserEl.textContent = `${learningData[randomLevel].title} • ${randomModule.title} — ${teaserText}`;
+                    } else {
+                        teaserEl.textContent = 'Tidak ada tantangan tersedia saat ini. Coba mulai modul populer.';
+                    }
+
+                    startBtn.addEventListener('click', () => {
+                        // Prepare a short challenge: set module and limit total questions to 5 for this session
+                        state.learning.level = randomLevel;
+                        state.learning.module = randomModule.id;
+                        // Keep original progress but jump into learning view; create a temporary mode 'challenge'
+                        state.learning.mode = 'challenge';
+                        // Save a marker for challenge size
+                        state.learning.challengeSize = 5;
+                        // Reset progress pointer for the challenge to 0 (temporary)
+                        state.user._challengeProgress = 0;
+                        performViewTransition('learning-view');
+                        // Load the first question of the module
+                        loadQuestion();
+                    });
+
+                    skipBtn && skipBtn.addEventListener('click', () => {
+                        featuredEl.remove();
+                    });
+                } catch (e) { console.debug('setupFeaturedChallenge error', e); }
+            })();
+
+            // Confetti helper: simple DOM-based burst
+            function fireConfetti(count = 12) {
+                try {
+                    const root = document.createElement('div');
+                    root.style.position = 'fixed'; root.style.left = '0'; root.style.top = '0'; root.style.width='100%'; root.style.height='0'; root.style.pointerEvents='none'; root.style.zIndex = '9999';
+                    document.body.appendChild(root);
+                    const colors = ['#f97316','#f59e0b','#ef4444','#10b981','#6366f1','#ec4899'];
+                    for (let i=0;i<count;i++) {
+                        const el = document.createElement('div');
+                        el.className = 'confetti-piece';
+                        el.style.left = Math.random() * 80 + 10 + '%';
+                        el.style.background = colors[Math.floor(Math.random()*colors.length)];
+                        el.style.transform = `translateY(0) rotate(${Math.random()*360}deg)`;
+                        el.style.animationDelay = (Math.random()*160) + 'ms';
+                        root.appendChild(el);
+                    }
+                    setTimeout(() => { root.remove(); }, 1200);
+                } catch (e) { console.debug('fireConfetti failed', e); }
+            }
+
         // Google Sign-In is intentionally disabled in the main flow.
         // Users proceed as guests; the app will remind them to login externally to persist progress securely.
 
@@ -1864,7 +2244,7 @@ print(data_sorted)</code></pre>
 
     // Login warning auto-close / manual close support
     function clearLoginWarningTimer() {
-        try { if (loginWarningTimer) { clearTimeout(loginWarningTimer); loginWarningTimer = null; } } catch(e) { console.debug('clearLoginWarningTimer', e); }
+        try { if (window.__loginWarningTimer) { clearTimeout(window.__loginWarningTimer); window.__loginWarningTimer = null; } } catch(e) { console.debug('clearLoginWarningTimer', e); }
     }
     function hideLoginWarning() {
         try {
@@ -1877,7 +2257,7 @@ print(data_sorted)</code></pre>
         clearLoginWarningTimer();
         // auto-close after 5 seconds
         console.debug('startLoginWarningTimer: starting 5s timer');
-        loginWarningTimer = setTimeout(() => {
+        window.__loginWarningTimer = setTimeout(() => {
             console.debug('startLoginWarningTimer: timer fired — hiding warning');
             hideLoginWarning();
         }, 5000);
